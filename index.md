@@ -217,7 +217,7 @@
     <div class="header-left">
       <div class="logo"><span>GNR3</span></div>
       <div class="htitle">
-        <h1>ระบบจัดการ GNR3</h1>
+        <h1>GNR3 — ระบบบริหารจัดการอาคาร</h1>
         <p>Building Management System</p>
       </div>
     </div>
