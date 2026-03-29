@@ -18,8 +18,8 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Sarabun','Kanit',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);overflow-x:hidden;}
-body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:var(--bgimg,none);background-size:cover;background-position:center;background-attachment:fixed;opacity:.13;filter:saturate(.6) brightness(.7);mix-blend-mode:luminosity;}
-.dot-grid{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18;background-image:radial-gradient(circle,rgba(255,255,255,.12) 1px,transparent 1px);background-size:28px 28px;}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:var(--bgimg,none);background-size:cover;background-position:center;background-attachment:scroll;opacity:.13;filter:saturate(.6) brightness(.7);mix-blend-mode:luminosity;will-change:auto;transform:translateZ(0);}
+.dot-grid{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18;background-image:radial-gradient(circle,rgba(255,255,255,.12) 1px,transparent 1px);background-size:28px 28px;transform:translateZ(0);}
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle at 15% 20%,rgba(79,126,255,.10) 0%,transparent 45%),radial-gradient(circle at 85% 75%,rgba(155,89,255,.10) 0%,transparent 45%),radial-gradient(circle at 55% 45%,rgba(6,214,160,.05) 0%,transparent 35%);}
 .wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 1.5rem 5rem;}
 
@@ -502,6 +502,205 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .ft-dot{width:4px;height:4px;border-radius:50%;background:var(--text3);}
 .toast{position:fixed;bottom:2rem;right:2rem;z-index:400;background:var(--surface2);border:1.5px solid rgba(0,212,255,.30);border-radius:var(--radius-md);padding:12px 22px;font-family:'Kanit';font-size:13px;font-weight:600;color:var(--cyan);box-shadow:0 10px 40px rgba(0,212,255,.15);transform:translateY(20px);opacity:0;transition:all .28s cubic-bezier(.22,1,.36,1);pointer-events:none;}
 .toast.show{transform:translateY(0);opacity:1;}
+
+/* ══════════════════════════════
+   MOBILE RESPONSIVE
+══════════════════════════════ */
+@media(max-width:640px){
+  /* Disable bg image on mobile to prevent flicker */
+  body::after { display:none; }
+  .dot-grid { display:none; }
+  /* Hide topbar nav tabs on mobile */
+  .nav-tabs { display:none !important; }
+  .topbar-brand .htitle h1 { font-size:12px; }
+  .topbar-brand .htitle p { display:none; }
+  .topbar-brand { padding:.6rem .9rem; gap:9px; }
+  .logo { width:36px; height:36px; border-radius:11px; }
+  .logo span { font-size:9px; }
+  .topbar-clock { padding:.5rem .8rem; }
+  .clock-t { font-size:17px; }
+  .clock-d { font-size:9px; }
+  .admin-toggle-btn span:not(.admin-badge) { display:none; }
+  .admin-toggle-btn { padding:0 .7rem; gap:5px; }
+  .wrap { padding:0 .9rem 5.5rem; }
+  .main-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .cat-icon-zone { height:110px; }
+  .cat-big-ico { width:54px; height:54px; border-radius:17px; }
+  .cat-big-ico svg { width:28px; height:28px; }
+  /* Dashboard sidebar hidden on mobile — controlled by bottom nav */
+  .dash-layout { flex-direction:column; }
+  .dash-sidebar { display:none; }
+  .dp-kpi-row { grid-template-columns:repeat(2,1fr); }
+  .dp-chart-row,.dp-chart-3 { grid-template-columns:1fr; }
+  .dp-header { padding:.9rem 1rem .7rem; }
+  .dp-body { padding:1rem; }
+  .dp-building-tabs { padding:.7rem 1rem .5rem; }
+  .sub-grid { grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
+  .sub-header-bar { min-height:70px; border-radius:var(--radius-lg); }
+  .sub-meta-title { font-size:14px; }
+  .sub-stat-pills { display:none; }
+  .sub-back-btn { padding:0 .9rem; font-size:11px; }
+  .admin-sections .admin-sec-head-right .admin-btn-sm:not(.danger) { display:none; }
+}
+
+/* ══════════════════════════════════
+   BOTTOM NAV — Pill Style (Image ref)
+══════════════════════════════════ */
+.bottom-nav {
+  display:none;
+  position:fixed; bottom:0; left:0; right:0; z-index:500;
+  padding: 0 0 env(safe-area-inset-bottom,0px);
+  /* transparent so the pill bar floats */
+  background: transparent;
+  pointer-events:none;
+}
+
+/* The floating pill container */
+.bottom-nav-inner {
+  pointer-events:auto;
+  display:flex; align-items:center; justify-content:space-between;
+  height:58px;
+  margin: 0 14px 14px;
+  background: rgba(22,25,45,0.92);
+  backdrop-filter:blur(24px) saturate(1.4);
+  -webkit-backdrop-filter:blur(24px) saturate(1.4);
+  border-radius:100px;
+  border:1px solid rgba(255,255,255,0.09);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.55),
+    0 1px 0 rgba(255,255,255,0.06) inset,
+    0 -1px 0 rgba(0,0,0,0.3) inset;
+  padding: 6px 8px;
+  gap:4px;
+  overflow:hidden;
+}
+
+/* ── Each nav button ── */
+.bnav-item {
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+  gap:7px; cursor:pointer; border:none;
+  background:transparent; color:rgba(255,255,255,0.35);
+  font-family:'Kanit'; font-size:13px; font-weight:700;
+  letter-spacing:.3px; white-space:nowrap;
+  border-radius:100px;
+  padding:0 10px; height:100%;
+  min-width:44px;
+  transition: color .28s cubic-bezier(.22,1,.36,1),
+              background .28s cubic-bezier(.22,1,.36,1),
+              padding .32s cubic-bezier(.22,1,.36,1),
+              box-shadow .28s, min-width .32s cubic-bezier(.22,1,.36,1);
+  -webkit-tap-highlight-color:transparent;
+  flex-shrink:0;
+  overflow:hidden;
+}
+.bnav-item::before {
+  /* inner glow when active */
+  content:''; position:absolute; inset:0; border-radius:100px;
+  background:var(--bnav-grad, linear-gradient(135deg,#4F7EFF,#9B59FF));
+  opacity:0; transition:opacity .28s;
+}
+.bnav-item.active { color:#fff; }
+.bnav-item.active::before { opacity:1; }
+.bnav-item.admin-active { color:#1A1728; }
+.bnav-item.admin-active::before { opacity:1; background:linear-gradient(135deg,#FFD166,#FF8C42); }
+
+/* Icons sit above ::before */
+.bnav-ico {
+  position:relative; z-index:1; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  width:24px; height:24px;
+  transition:transform .28s cubic-bezier(.22,1,.36,1);
+}
+.bnav-item.active .bnav-ico { transform:scale(1.08); }
+.bnav-item:active .bnav-ico { transform:scale(.88); }
+
+.bnav-label {
+  position:relative; z-index:1;
+  font-size:12.5px; font-weight:700; line-height:1;
+  max-width:0; overflow:hidden; opacity:0;
+  transition: max-width .32s cubic-bezier(.22,1,.36,1),
+              opacity .22s ease;
+  white-space:nowrap;
+}
+.bnav-item.active .bnav-label,
+.bnav-item.admin-active .bnav-label {
+  max-width:80px; opacity:1;
+}
+
+/* per-tab gradient */
+#bnav-main      { --bnav-grad:linear-gradient(135deg,#4F7EFF 0%,#7B5CFF 100%); }
+#bnav-dashboard { --bnav-grad:linear-gradient(135deg,#9B59FF 0%,#C27BFF 100%); }
+#bnav-admin     { --bnav-grad:linear-gradient(135deg,#FFD166 0%,#FF8C42 100%); }
+
+/* inactive hover faint */
+.bnav-item:hover:not(.active):not(.admin-active) {
+  color:rgba(255,255,255,0.55);
+  background:rgba(255,255,255,0.05);
+}
+
+/* spacer to push items apart nicely */
+.bnav-flex-spacer { flex:1; }
+
+/* ── Dashboard Sub Nav ── */
+#bnav-dash-sub.bottom-nav-inner {
+  padding: 5px 6px; gap:2px;
+}
+
+/* back button in dash sub */
+#bnav-dash-sub .bnav-item {
+  --bnav-grad:linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.08));
+  min-width:40px; padding:0 8px; flex:0 0 auto;
+}
+#bnav-dash-sub .bnav-item.active { color:rgba(255,255,255,.80); }
+
+/* dash sub items */
+.bnav-dash-sub-item {
+  position:relative;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  cursor:pointer; border:none;
+  background:transparent; color:rgba(255,255,255,0.30);
+  font-family:'Kanit'; font-size:11px; font-weight:700;
+  letter-spacing:.2px; white-space:nowrap;
+  border-radius:100px; padding:0 8px; height:100%;
+  min-width:36px; flex:1;
+  transition: color .28s cubic-bezier(.22,1,.36,1),
+              background .28s, min-width .32s cubic-bezier(.22,1,.36,1);
+  -webkit-tap-highlight-color:transparent; overflow:hidden;
+}
+.bnav-dash-sub-item::before {
+  content:''; position:absolute; inset:0; border-radius:100px;
+  background:var(--dsub-grad,linear-gradient(135deg,#00D4FF,#4F7EFF));
+  opacity:0; transition:opacity .28s;
+}
+.bnav-dash-sub-item.active { color:#fff; }
+.bnav-dash-sub-item.active::before { opacity:1; }
+.bnav-dash-sub-item:hover:not(.active) {
+  color:rgba(255,255,255,.5); background:rgba(255,255,255,.05);
+}
+.bnav-dash-sub-item .bnav-ico {
+  position:relative; z-index:1; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  width:20px; height:20px;
+}
+.bnav-dash-sub-item .bnav-label {
+  position:relative; z-index:1; font-size:11px; font-weight:700;
+  max-width:0; overflow:hidden; opacity:0; white-space:nowrap;
+  transition: max-width .32s cubic-bezier(.22,1,.36,1), opacity .22s;
+}
+.bnav-dash-sub-item.active .bnav-label { max-width:70px; opacity:1; }
+
+/* per-panel gradients */
+.bnav-dash-sub-item[data-panel="cmpmsr"]{--dsub-grad:linear-gradient(135deg,#FF8C42,#FF5569);}
+.bnav-dash-sub-item[data-panel="utility"]{--dsub-grad:linear-gradient(135deg,#FFD166,#FF8C42);}
+.bnav-dash-sub-item[data-panel="supply"]{--dsub-grad:linear-gradient(135deg,#06D6A0,#00B4CC);}
+.bnav-dash-sub-item[data-panel="project"]{--dsub-grad:linear-gradient(135deg,#9B59FF,#C27BFF);}
+.bnav-dash-sub-item[data-panel="otair"]{--dsub-grad:linear-gradient(135deg,#00D4FF,#4F7EFF);}
+
+@media(max-width:640px){
+  .bottom-nav { display:block; }
+}
+
 </style>
 </head>
 <body>
@@ -511,6 +710,62 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   onerror="this.src='https://drive.google.com/uc?export=view&id=1TNslIUd6Zq3eYeykVG3laoaWKO8R_LS_'">
 
 <div class="wrap">
+
+<!-- BOTTOM NAV (mobile only) -->
+<nav class="bottom-nav" id="bottom-nav">
+  <!-- Default nav: 3 tabs -->
+  <div class="bottom-nav-inner" id="bnav-default">
+    <button class="bnav-item active" id="bnav-main" onclick="bnavSwitch('main')">
+      <div class="bnav-ico">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      </div>
+      <span class="bnav-label">หน้าหลัก</span>
+    </button>
+    <button class="bnav-item" id="bnav-dashboard" onclick="bnavSwitch('dashboard')">
+      <div class="bnav-ico">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+      </div>
+      <span class="bnav-label">Dashboard</span>
+    </button>
+    <button class="bnav-item" id="bnav-admin" onclick="handleAdminToggle()">
+      <div class="bnav-ico">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <span class="bnav-label">Admin</span>
+    </button>
+  </div>
+  <!-- Dashboard sub-panel nav -->
+  <div class="bottom-nav-inner" id="bnav-dash-sub" style="display:none">
+    <button class="bnav-item" onclick="bnavSwitch('main')" style="max-width:56px">
+      <div class="bnav-ico">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <span class="bnav-label">หน้าหลัก</span>
+    </button>
+    <button class="bnav-dash-sub-item active" data-panel="cmpmsr" onclick="bnavDashPanel('cmpmsr',this)">
+      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      <span class="bnav-label">CM PM SR</span>
+    </button>
+    <button class="bnav-dash-sub-item" data-panel="utility" onclick="bnavDashPanel('utility',this)">
+      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <span class="bnav-label">ไฟ/น้ำ</span>
+    </button>
+    <button class="bnav-dash-sub-item" data-panel="supply" onclick="bnavDashPanel('supply',this)">
+      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/></svg></div>
+      <span class="bnav-label">อุปโภค</span>
+    </button>
+    <button class="bnav-dash-sub-item" data-panel="project" onclick="bnavDashPanel('project',this)">
+      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+      <span class="bnav-label">โครงการ</span>
+    </button>
+    <button class="bnav-dash-sub-item" data-panel="otair" onclick="bnavDashPanel('otair',this)">
+      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
+      <span class="bnav-label">OT AIR</span>
+    </button>
+  </div>
+</nav>
+
+
 
 <!-- TOPBAR -->
 <header class="topbar">
@@ -1771,6 +2026,100 @@ const MONTHS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','ม�
 const DAYS=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
 function tick(){const n=new Date();document.getElementById('ct').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');document.getElementById('cd').textContent=`${DAYS[n.getDay()]} ${n.getDate()} ${MONTHS[n.getMonth()]} ${n.getFullYear()+543}`;}
 tick();setInterval(tick,1000);
+
+/* ══ BOTTOM NAV v2 ══ */
+let _currentBnav = 'main'; // main | dashboard | admin
+
+function bnavSwitch(tab){
+  if(tab === 'main'){
+    // go to main and show default nav
+    switchTab('main');
+    bnavShowDefault('main');
+  } else if(tab === 'dashboard'){
+    switchTab('dashboard');
+    bnavShowDashSub();
+  } else if(tab === 'admin'){
+    handleAdminToggle();
+  }
+}
+
+function bnavShowDefault(activeTab){
+  _currentBnav = activeTab;
+  const def = document.getElementById('bnav-default');
+  const sub = document.getElementById('bnav-dash-sub');
+  if(def) def.style.display = '';
+  if(sub) sub.style.display = 'none';
+  // highlight correct tab
+  document.querySelectorAll('#bnav-default .bnav-item').forEach(b => b.classList.remove('active','admin-active'));
+  const map = {'main':'bnav-main','dashboard':'bnav-dashboard','admin':'bnav-admin'};
+  if(map[activeTab]){
+    const btn = document.getElementById(map[activeTab]);
+    if(btn) btn.classList.add(activeTab==='admin'?'admin-active':'active');
+  }
+}
+
+function bnavShowDashSub(){
+  _currentBnav = 'dashboard';
+  const def = document.getElementById('bnav-default');
+  const sub = document.getElementById('bnav-dash-sub');
+  if(def) def.style.display = 'none';
+  if(sub) sub.style.display = '';
+  // mark first active if none
+  const activeItem = document.querySelector('.bnav-dash-sub-item.active');
+  if(!activeItem){
+    const first = document.querySelector('.bnav-dash-sub-item');
+    if(first) first.classList.add('active');
+  }
+}
+
+function bnavDashPanel(panel, btn){
+  // Switch sidebar panel AND update bottom nav highlight
+  const sideBtn = document.querySelector('.dash-nav-item[data-panel="'+panel+'"]');
+  switchDashPanel(panel, sideBtn);
+  // Update bottom nav highlight
+  document.querySelectorAll('.bnav-dash-sub-item').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+function bnavSyncAdmin(){
+  const adminBnav = document.getElementById('bnav-admin');
+  if(adminBnav) adminBnav.classList.toggle('admin-active', isAdmin);
+}
+
+// Patch switchTab to sync bottom nav
+const _origSwitchTab = switchTab;
+switchTab = function(tab){
+  _origSwitchTab(tab);
+  setTimeout(()=>{
+    if(tab === 'dashboard') bnavShowDashSub();
+    else if(tab === 'main') bnavShowDefault('main');
+    else if(tab === 'admin') bnavShowDefault('admin');
+    bnavSyncAdmin();
+  }, 50);
+};
+
+// Patch navigate: when entering sub-menu, keep default nav; going back shows default
+const _origNavigate = navigate;
+navigate = function(secId){
+  _origNavigate(secId);
+  setTimeout(()=>{
+    if(secId){
+      // in sub-menu view: show default nav, highlight หน้าหลัก  
+      bnavShowDefault('main');
+    } else {
+      bnavShowDefault('main');
+    }
+    bnavSyncAdmin();
+  }, 80);
+};
+
+// Also patch renderDashboard to switch to dash sub nav
+const _origRenderDash = renderDashboard;
+renderDashboard = function(){
+  _origRenderDash();
+  bnavShowDashSub();
+};
+
 </script>
 </body>
 </html>
