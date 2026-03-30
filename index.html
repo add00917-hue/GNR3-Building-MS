@@ -2618,7 +2618,7 @@ function aiAddMsg(role, text){
   wrap.appendChild(div);
   wrap.scrollTop = wrap.scrollHeight;
   aiMsgHistory.push({role: role==='bot'?'model':'user', parts:[{text}]});
-  if(aiMsgHistory.length > 20) aiMsgHistory = aiMsgHistory.slice(-20);
+  if(aiMsgHistory.length > 6) aiMsgHistory = aiMsgHistory.slice(-6);
 }
 
 function aiAddTyping(){
@@ -2646,14 +2646,17 @@ function aiSetStatus(state, text){
   if(fab){ fab.className = 'ai-fab ' + (state||''); }
 }
 
-/* ── Build system context from GNR3 data ── */
+/* ── Build system context — lightweight version ── */
 function buildSystemPrompt(){
-  const secs = SECTIONS.map(s=>{
-    const items = s.items.map(i=>'  - '+i.name+' ('+i.status+'): '+i.desc).join('\n');
-    return '['+s.id+'] '+s.title+' ('+s.sub+')\n'+(items||'  (ไม่มีรายการย่อย)');
-  }).join('\n\n');
-
-  return 'คุณคือ GNR3 Assistant ผู้ช่วย AI สำหรับระบบบริหารจัดการสำนักงาน GNR3 Building Management\nตอบเป็นภาษาไทย กระชับ ชัดเจน เป็นมืออาชีพ\n\nข้อมูลระบบปัจจุบัน:\n' + secs + '\n\nหน้า Dashboard มี: CM/PM/SR, ค่าไฟ-น้ำ, อุปโภคบริโภค, สรุปโครงการ, OT AIR\nระบบเชื่อมต่อ Google Sheets สำหรับข้อมูล Dashboard\nAdmin password: (ปกปิด)';
+  // Only send category names + counts, not all sub-items
+  const secSummary = SECTIONS.map(s=>s.id+'.'+s.title+'('+s.items.length+'รายการ)').join(', ');
+  const total = SECTIONS.flatMap(s=>s.items).length;
+  const live  = SECTIONS.flatMap(s=>s.items).filter(i=>i.status==='live'||i.status==='active').length;
+  const wip   = SECTIONS.flatMap(s=>s.items).filter(i=>i.status==='wip').length;
+  return 'คุณคือ GNR3 Assistant ระบบบริหารจัดการสำนักงาน ตอบภาษาไทย กระชับ'
+    +'\nระบบมี '+SECTIONS.length+' หมวด รวม '+total+' รายการ พร้อมใช้ '+live+' WIP '+wip
+    +'\nหมวด: '+secSummary
+    +'\nDashboard: CM/PM/SR, ค่าไฟ-น้ำ, อุปโภค, โครงการ, OT AIR';
 }
 
 /* ── Call Gemini API ── */
@@ -2670,15 +2673,17 @@ async function callGemini(userText){
 
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${key}`;
 
-  // Build conversation with system context
-  const messages = [
-    { role:'user', parts:[{text: buildSystemPrompt() + '\n\nผู้ใช้ถาม: ' + userText }] }
-  ];
-  // Add recent history (last 6 exchanges)
-  if(aiMsgHistory.length > 2){
-    const recent = aiMsgHistory.slice(-6);
-    messages.push(...recent);
+  // Send system context only on first message to save tokens
+  const isFirstMsg = aiMsgHistory.filter(m=>m.role==='user').length === 0;
+  const userContent = isFirstMsg
+    ? buildSystemPrompt() + '\n\nผู้ใช้: ' + userText
+    : userText;
+  const messages = [];
+  // Add recent history (last 4 exchanges only)
+  if(aiMsgHistory.length > 0){
+    messages.push(...aiMsgHistory.slice(-4));
   }
+  messages.push({ role:'user', parts:[{text: userContent}] });
 
   try {
     const res = await fetch(endpoint, {
