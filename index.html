@@ -184,6 +184,25 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   border:1.5px solid var(--border2); background:transparent; color:var(--text2);
   transition:all .18s; white-space:nowrap;
 }
+/* Speak / TTS button */
+.dp-speak-btn {
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:'Kanit'; font-size:11px; font-weight:600;
+  padding:7px 13px; border-radius:var(--radius-sm); cursor:pointer;
+  border:1.5px solid rgba(155,89,255,0.30); background:rgba(155,89,255,0.08);
+  color:var(--purple); transition:all .18s; white-space:nowrap;
+}
+.dp-speak-btn:hover { background:rgba(155,89,255,0.18); border-color:rgba(155,89,255,0.55); }
+.dp-speak-btn.speaking {
+  background:rgba(155,89,255,0.22); border-color:var(--purple); color:#fff;
+  animation:speakPulse 1.2s ease-in-out infinite;
+}
+.dp-speak-btn.speaking svg { animation:speakWave 0.6s ease-in-out infinite alternate; }
+@keyframes speakPulse {
+  0%,100%{ box-shadow:0 0 0 0 rgba(155,89,255,0.5); }
+  50%{ box-shadow:0 0 0 7px rgba(155,89,255,0); }
+}
+@keyframes speakWave { from{transform:scaleY(0.7)} to{transform:scaleY(1.2)} }
 .dp-date-btn:hover,.dp-filter-btn:hover,.dp-refresh-btn:hover { color:var(--text); border-color:var(--text2); }
 .dp-sheet-btn { color:var(--green); border-color:rgba(6,214,160,.25); background:rgba(6,214,160,.06); }
 .dp-sheet-btn:hover { background:rgba(6,214,160,.12); }
@@ -1224,6 +1243,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               เชื่อมต่อ Sheets
             </button>
+
+            <button class="dp-speak-btn" id="speak-btn-cmpmsr" onclick="dashSpeak('cmpmsr')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+              อ่านสรุป
+            </button>
             <button class="dp-refresh-btn" onclick="loadPanelData('cmpmsr')">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
               รีเฟรช
@@ -1273,6 +1297,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
             <button class="dp-sheet-btn disconnected" id="btn-sheet-utility" onclick="openSheetConfig('utility')">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               เชื่อมต่อ Sheets
+            </button>
+
+            <button class="dp-speak-btn" id="speak-btn-utility" onclick="dashSpeak('utility')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+              อ่านสรุป
             </button>
             <button class="dp-refresh-btn" onclick="loadPanelData('utility')">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
@@ -1330,6 +1359,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               เชื่อมต่อ Sheets
             </button>
+
+            <button class="dp-speak-btn" id="speak-btn-supply" onclick="dashSpeak('supply')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+              อ่านสรุป
+            </button>
             <button class="dp-refresh-btn" onclick="loadPanelData('supply')">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
               รีเฟรช
@@ -1376,6 +1410,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
             <button class="dp-sheet-btn disconnected" id="btn-sheet-project" onclick="openSheetConfig('project')">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               เชื่อมต่อ Sheets
+            </button>
+
+            <button class="dp-speak-btn" id="speak-btn-project" onclick="dashSpeak('project')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+              อ่านสรุป
             </button>
             <button class="dp-refresh-btn" onclick="loadPanelData('project')">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
@@ -1434,6 +1473,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
             <button class="dp-sheet-btn disconnected" id="btn-sheet-otair" onclick="openSheetConfig('otair')">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               เชื่อมต่อ Sheets
+            </button>
+
+            <button class="dp-speak-btn" id="speak-btn-otair" onclick="dashSpeak('otair')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+              อ่านสรุป
             </button>
             <button class="dp-refresh-btn" onclick="loadPanelData('otair')">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
@@ -2765,6 +2809,106 @@ function speak(text){
 
 // Init AI on load
 
+
+
+/* ══ DASHBOARD SPEAK — AI reads summary ══ */
+let _dashSpeaking = false;
+
+function dashSpeak(panel){
+  // If already speaking this panel, stop
+  const btn = document.getElementById('speak-btn-'+panel);
+  if(_dashSpeaking){
+    speechSynthesis.cancel();
+    _dashSpeaking = false;
+    document.querySelectorAll('.dp-speak-btn').forEach(b=>{
+      b.classList.remove('speaking');
+      b.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg> อ่านสรุป';
+    });
+    return;
+  }
+
+  if(btn){ btn.classList.add('speaking'); btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/></svg> หยุด'; }
+  _dashSpeaking = true;
+
+  const summary = buildDashSummary(panel);
+  const key = getAiKey();
+
+  if(key){
+    // Use Gemini to create natural Thai summary
+    aiSetStatus('thinking','กำลังสรุปข้อมูล...');
+    const prompt = 'สรุปข้อมูลนี้เป็นประโยคภาษาไทยสั้นๆ เหมือนพนักงานรายงานให้ผู้บริหารฟัง ไม่เกิน 3 ประโยค:\n' + summary;
+    const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/'+AI_MODEL+':generateContent?key='+key;
+    fetch(endpoint, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ contents:[{role:'user',parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:200,temperature:0.5} })
+    })
+    .then(r=>{
+      if(r.status===429){ speakDash(summary); return; } // fallback to raw if quota
+      return r.json();
+    })
+    .then(data=>{
+      if(!data) return;
+      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || summary;
+      aiSetStatus('','พร้อมช่วยเหลือ');
+      speakDash(reply);
+    })
+    .catch(()=>{ speakDash(summary); }); // fallback
+  } else {
+    // No AI key - just read raw summary
+    speakDash(summary);
+  }
+}
+
+function speakDash(text){
+  if(!text || typeof speechSynthesis==='undefined') return;
+  speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'th-TH'; utt.rate = 1.0; utt.pitch = 1.0; utt.volume = 1.0;
+  const voices = speechSynthesis.getVoices();
+  const th = voices.find(v=>v.lang.startsWith('th'));
+  if(th) utt.voice = th;
+  utt.onend = ()=>{
+    _dashSpeaking = false;
+    document.querySelectorAll('.dp-speak-btn').forEach(b=>{
+      b.classList.remove('speaking');
+      b.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg> อ่านสรุป';
+    });
+  };
+  speechSynthesis.speak(utt);
+}
+
+function buildDashSummary(panel){
+  const g = id => { const e=document.getElementById(id); return e?e.textContent.trim():'ไม่มีข้อมูล'; };
+  const panelNames = {cmpmsr:'CM PM SR',utility:'ค่าไฟฟ้าและน้ำประปา',supply:'อุปโภคบริโภค',project:'สรุปโครงการ',otair:'การขอ OT AIR'};
+  const name = panelNames[panel]||panel;
+  let summary = 'รายงาน'+name+'. ';
+  if(panel==='cmpmsr'){
+    summary += 'CM ทั้งหมด '+g('kv-cm')+' รายการ. ';
+    summary += 'PM เดือนนี้ '+g('kv-pm')+' รายการ. ';
+    summary += 'SR รอดำเนินการ '+g('kv-sr')+' รายการ. ';
+    summary += 'เสร็จสิ้นแล้ว '+g('kv-done')+' รายการ.';
+  } else if(panel==='utility'){
+    summary += 'ค่าไฟฟ้าเดือนนี้ '+g('kv-elec')+' บาท. ';
+    summary += 'ค่าน้ำประปา '+g('kv-water')+' บาท. ';
+    summary += 'รวมสาธารณูปโภค '+g('kv-total-util')+' บาท. ';
+    summary += 'หน่วยไฟฟ้ารวม '+g('kv-kwh')+' หน่วย.';
+  } else if(panel==='supply'){
+    summary += 'รายการทั้งหมด '+g('kv-sup-total')+' รายการ. ';
+    summary += 'สต็อกใกล้หมด '+g('kv-sup-low')+' รายการ. ';
+    summary += 'ค่าใช้จ่ายเดือนนี้ '+g('kv-sup-cost')+' บาท.';
+  } else if(panel==='project'){
+    summary += 'โครงการทั้งหมด '+g('kv-proj-total')+' โครงการ. ';
+    summary += 'กำลังดำเนินการ '+g('kv-proj-active')+' โครงการ. ';
+    summary += 'เสร็จสิ้น '+g('kv-proj-done')+' โครงการ. ';
+    summary += 'รอดำเนินการ '+g('kv-proj-wait')+' โครงการ.';
+  } else if(panel==='otair'){
+    summary += 'คำขอทั้งหมด '+g('kv-ot-total')+' รายการ. ';
+    summary += 'อนุมัติแล้ว '+g('kv-ot-approve')+' รายการ. ';
+    summary += 'รอการอนุมัติ '+g('kv-ot-pending')+' รายการ. ';
+    summary += 'ชั่วโมง OT รวม '+g('kv-ot-hours')+' ชั่วโมง.';
+  }
+  return summary;
+}
 
 </script>
 </body>
