@@ -39,33 +39,40 @@ body.light-mode body::after { opacity:.07; }
 }
 .theme-toggle-btn:hover { border-color:var(--blue); color:var(--blue); transform:rotate(20deg); background:rgba(79,126,255,.10); }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Sarabun','Kanit',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);overflow-x:hidden;}
+body{font-family:'Sarabun','Kanit',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);overflow-x:hidden;display:flex;}
 body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:var(--bgimg,none);background-size:cover;background-position:center;background-attachment:scroll;opacity:.13;filter:saturate(.6) brightness(.7);mix-blend-mode:luminosity;will-change:auto;transform:translateZ(0);}
 .dot-grid{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18;background-image:radial-gradient(circle,rgba(255,255,255,.12) 1px,transparent 1px);background-size:28px 28px;transform:translateZ(0);}
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle at 15% 20%,rgba(79,126,255,.10) 0%,transparent 45%),radial-gradient(circle at 85% 75%,rgba(155,89,255,.10) 0%,transparent 45%),radial-gradient(circle at 55% 45%,rgba(6,214,160,.05) 0%,transparent 35%);}
-.wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 1.5rem 5rem;}
+.wrap{position:relative;z-index:1;flex:1;min-width:0;padding:0 1.8rem 5rem;overflow-x:hidden;}
 
-/* ══ TOPBAR ══ */
-/* ── TOPBAR — compact professional ── */
+/* ══ SIDEBAR ══ */
+/* Fixed left sidebar — full height */
 .topbar {
-  display:flex; align-items:center; gap:0;
-  margin:1.2rem 0 1.8rem;
-  height:54px;
-  background:rgba(22,25,45,0.94);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  border-radius:var(--radius-xl);
-  border:1px solid rgba(255,255,255,0.08);
-  box-shadow:0 4px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
-  overflow:hidden;
-  animation:slideDown .5s cubic-bezier(.22,1,.36,1) both;
+  position:fixed; left:0; top:0; bottom:0; z-index:300;
+  width:240px; flex-shrink:0;
+  display:flex !important; flex-direction:column; align-items:stretch;
+  background:rgba(14,17,32,0.98);
+  border-right:1px solid var(--border);
+  box-shadow:6px 0 32px rgba(0,0,0,.45);
+  overflow:hidden; overflow-y:auto;
+  scrollbar-width:none;
+  animation:none;
+  margin:0; height:100vh; border-radius:0;
 }
-.topbar.hidden{display:none;}
+.topbar::-webkit-scrollbar { display:none; }
+.topbar.hidden { display:flex !important; } /* sidebar always visible */
+body.light-mode .topbar {
+  background:rgba(238,241,252,0.99);
+  box-shadow:6px 0 32px rgba(26,35,64,.12);
+}
+
+/* Push wrap to the right */
+.wrap { margin-left:240px; }
 
 .topbar-brand {
   display:flex; align-items:center; gap:11px;
-  padding:0 1.1rem 0 .9rem; flex-shrink:0; height:100%;
-  border-right:1px solid rgba(255,255,255,0.06);
+  padding:1.2rem 1rem; flex-shrink:0;
+  border-bottom:1px solid var(--border);
 }
 .logo {
   width:34px; height:34px; border-radius:10px; flex-shrink:0;
@@ -80,38 +87,60 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .htitle p{font-size:9.5px;color:var(--text3);margin-top:1px;white-space:nowrap;}
 
 /* Nav tabs */
-.nav-tabs{display:flex;gap:3px;flex:1;padding:0 .7rem;align-items:center;height:100%;}
-.nav-tab {
-  font-family:'Kanit'; font-size:11.5px; font-weight:600; letter-spacing:.2px;
-  padding:6px 16px; border-radius:var(--radius-md); border:none; cursor:pointer;
-  color:var(--text2); background:transparent;
-  display:flex; align-items:center; gap:6px; white-space:nowrap;
-  transition:all .18s;
+/* Sidebar section label */
+.nav-section-label {
+  font-size:8.5px; font-weight:800; letter-spacing:2.5px; text-transform:uppercase;
+  color:var(--text3); padding:.9rem 1.1rem .3rem; flex-shrink:0;
 }
-.nav-tab:hover{color:var(--text);background:rgba(255,255,255,.06);}
-.nav-tab.active{background:linear-gradient(135deg,#4F7EFF,#9B59FF);color:#fff;box-shadow:0 3px 12px rgba(79,126,255,.35);}
-.nav-tab svg { opacity:.75; }
+.nav-tabs{display:flex;flex-direction:column;gap:2px;padding:.4rem .7rem;flex-shrink:0;}
+.nav-tab {
+  font-family:'Kanit'; font-size:12px; font-weight:600;
+  padding:.65rem .9rem; border-radius:var(--radius-md); border:none; cursor:pointer;
+  color:var(--text2); background:transparent;
+  display:flex; align-items:center; gap:9px; white-space:nowrap;
+  transition:all .18s; width:100%; text-align:left;
+  border-left:3px solid transparent;
+}
+.nav-tab:hover{color:var(--text);background:rgba(255,255,255,.06);border-left-color:rgba(255,255,255,.12);}
+.nav-tab.active{
+  background:linear-gradient(90deg,rgba(79,126,255,.20),rgba(79,126,255,.05));
+  color:var(--blue); border-left-color:var(--blue);
+}
+.nav-tab svg { opacity:.70; flex-shrink:0; }
 .nav-tab.active svg { opacity:1; }
+.nav-tab-ico {
+  width:32px; height:32px; border-radius:9px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.05); transition:background .18s;
+}
+.nav-tab.active .nav-tab-ico { background:rgba(79,126,255,.22); }
 
 /* Right section */
-.topbar-right{display:flex;align-items:center;gap:0;border-left:1px solid rgba(255,255,255,0.06);height:100%;}
-.topbar-clock{padding:0 1rem;text-align:right;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;}
+.topbar-right{
+  margin-top:auto; display:flex; flex-direction:column; gap:6px;
+  padding:.9rem 1rem; border-top:1px solid var(--border); flex-shrink:0;
+}
+.topbar-clock{
+  padding:.65rem .8rem; border-radius:var(--radius-md);
+  background:rgba(79,126,255,.08); border:1px solid rgba(79,126,255,.18);
+  display:flex; flex-direction:column; justify-content:center;
+}
 .clock-t{font-family:'Kanit';font-size:20px;font-weight:700;color:var(--cyan);letter-spacing:2px;line-height:1;}
-.clock-d{font-size:9.5px;color:var(--text3);margin-top:1px;text-align:right;}
+.clock-d{font-size:9.5px;color:var(--text3);margin-top:2px;}
 
 /* Admin button — minimal */
 .admin-toggle-btn {
-  display:flex; align-items:center; gap:5px;
-  padding:0 .9rem; height:100%;
-  font-family:'Kanit'; font-size:11px; font-weight:600;
+  display:flex; align-items:center; gap:8px; width:100%;
+  padding:.62rem .7rem; border-radius:var(--radius-md);
+  font-family:'Kanit'; font-size:12px; font-weight:600;
   cursor:pointer; border:none;
-  border-left:1px solid rgba(255,255,255,0.06);
-  background:transparent; color:rgba(255,255,255,.35);
-  transition:all .18s; white-space:nowrap;
+  background:transparent; color:var(--text2);
+  transition:all .18s; white-space:nowrap; text-align:left;
+  border-left:3px solid transparent;
 }
-.admin-toggle-btn:hover{color:var(--yellow);background:rgba(255,209,102,.07);}
-.admin-toggle-btn.is-admin{color:var(--yellow);}
-.admin-badge{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--yellow);box-shadow:0 0 7px var(--yellow);animation:livePulse 2s infinite;}
+.admin-toggle-btn:hover{color:var(--yellow);background:rgba(255,209,102,.08);border-left-color:rgba(255,209,102,.3);}
+.admin-toggle-btn.is-admin{color:var(--yellow);background:rgba(255,209,102,.10);border-left-color:var(--yellow);}
+.admin-badge{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--yellow);box-shadow:0 0 7px var(--yellow);animation:livePulse 2s infinite;}
 
 /* ══ VIEWS ══ */
 .view{display:none;}
@@ -320,6 +349,275 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 /* No data */
 .dp-empty { display:flex; align-items:center; justify-content:center; height:160px; flex-direction:column; gap:10px; color:var(--text3); }
 .dp-empty-ico { font-size:36px; opacity:.4; }
+
+/* ══ SERVICE KPI CARDS — main-menu card style ══ */
+.svc-kpi-grid {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:16px;
+  margin-bottom:1.6rem;
+}
+@media(max-width:900px){.svc-kpi-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:480px){.svc-kpi-grid{grid-template-columns:1fr 1fr;gap:10px;}}
+
+.svc-kpi-card {
+  position:relative; cursor:default; display:flex; flex-direction:column;
+  overflow:hidden; border-radius:var(--radius-xl);
+  background:var(--surface); border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);
+  transition:transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s;
+  opacity:0; animation:cardUp .55s cubic-bezier(.22,1,.36,1) both;
+}
+.svc-kpi-card:nth-child(1){animation-delay:.04s}
+.svc-kpi-card:nth-child(2){animation-delay:.10s}
+.svc-kpi-card:nth-child(3){animation-delay:.16s}
+.svc-kpi-card:nth-child(4){animation-delay:.22s}
+.svc-kpi-card:hover {
+  transform:translateY(-6px) scale(1.015);
+  box-shadow:0 20px 50px rgba(0,0,0,.50), 0 0 0 1px var(--border2);
+}
+
+/* Gradient icon zone */
+.svc-kpi-zone {
+  position:relative; overflow:hidden; height:120px;
+  display:flex; align-items:center; justify-content:center;
+}
+.svc-kpi-zone::before {
+  content:''; position:absolute; inset:0;
+  background:var(--skgrad, linear-gradient(145deg,#4F7EFF,#9B59FF)); z-index:0;
+}
+.svc-kpi-zone .sk-deco1 {
+  position:absolute; top:-20px; right:-20px; width:90px; height:90px;
+  border-radius:50%; background:rgba(255,255,255,.12); pointer-events:none; z-index:1;
+}
+.svc-kpi-zone .sk-deco2 {
+  position:absolute; bottom:-24px; left:-16px; width:70px; height:70px;
+  border-radius:50%; background:rgba(255,255,255,.08); pointer-events:none; z-index:1;
+}
+
+/* Big number in zone */
+.svc-kpi-num {
+  position:relative; z-index:2;
+  font-family:'Kanit'; font-size:56px; font-weight:900; color:#fff;
+  line-height:1; text-shadow:0 4px 20px rgba(0,0,0,.30);
+  transition:transform .2s ease;
+}
+.svc-kpi-card:hover .svc-kpi-num { transform:scale(1.08); }
+
+/* Badge top-right */
+.svc-kpi-badge {
+  position:absolute; top:.7rem; right:.7rem; z-index:3;
+  font-family:'Kanit'; font-size:8.5px; font-weight:700; letter-spacing:1px;
+  color:rgba(255,255,255,.9); background:rgba(0,0,0,.28);
+  border:1px solid rgba(255,255,255,.22); padding:2px 9px;
+  border-radius:20px; backdrop-filter:blur(4px);
+}
+/* Badge top-left (type tag) */
+.svc-kpi-tag {
+  position:absolute; top:.7rem; left:.7rem; z-index:3;
+  font-family:'Kanit'; font-size:9px; font-weight:800; letter-spacing:1px;
+  color:rgba(255,255,255,.80); background:rgba(0,0,0,.20);
+  border:1px solid rgba(255,255,255,.18); padding:2px 8px;
+  border-radius:20px; backdrop-filter:blur(4px);
+}
+
+/* Icon bottom-right of zone */
+.svc-kpi-ico {
+  position:absolute; bottom:.8rem; right:.8rem; z-index:2;
+  width:44px; height:44px; border-radius:14px;
+  background:rgba(255,255,255,.18); border:1.5px solid rgba(255,255,255,.28);
+  display:flex; align-items:center; justify-content:center; color:#fff;
+  transition:transform .28s ease;
+}
+.svc-kpi-card:hover .svc-kpi-ico { transform:scale(1.12) rotate(-6deg); }
+.svc-kpi-ico svg { width:22px; height:22px; }
+
+/* Body */
+.svc-kpi-body {
+  padding:.9rem 1.1rem 1rem; flex:1;
+  background:var(--surface); border-top:1px solid var(--border);
+}
+.svc-kpi-name {
+  font-family:'Kanit'; font-size:13px; font-weight:700; color:var(--text);
+  line-height:1.3; margin-bottom:3px;
+}
+.svc-kpi-desc { font-size:10px; color:var(--text2); line-height:1.4; }
+.svc-kpi-bar-wrap { margin-top:.7rem; }
+.svc-kpi-bar-track {
+  height:4px; background:rgba(255,255,255,.07); border-radius:2px; overflow:hidden;
+}
+body.light-mode .svc-kpi-bar-track { background:rgba(0,0,0,.08); }
+.svc-kpi-bar-fill { height:100%; border-radius:2px; transition:width 1.2s cubic-bezier(.22,1,.36,1); }
+.svc-kpi-bar-label { font-size:9px; color:var(--text3); margin-top:4px; font-weight:600; }
+
+/* ── Chart header with controls ── */
+.dp-chart-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:.5rem; flex-wrap:wrap; gap:6px;
+}
+.dp-chart-header-left {}
+.dp-chart-controls { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.dp-month-select {
+  font-family:'Kanit'; font-size:10.5px; font-weight:600;
+  padding:4px 10px; border-radius:var(--radius-sm); cursor:pointer;
+  border:1.5px solid var(--border2); background:var(--surface2); color:var(--text2);
+  outline:none; transition:border-color .18s;
+}
+.dp-month-select:focus { border-color:var(--blue); color:var(--text); }
+/* dp-range-btn removed — replaced by month selectors */
+
+/* ── Chart summary footer ── */
+.cmpmsr-summary-row {
+  display:flex; align-items:center;
+  margin-top:.9rem; padding:.75rem 1rem;
+  background:var(--bg2); border-radius:var(--radius-md);
+  border:1px solid var(--border); gap:0;
+}
+.cs-item {
+  flex:1; display:flex; align-items:center; gap:10px;
+  padding:0 .8rem;
+}
+.cs-dot {
+  width:10px; height:10px; border-radius:3px; flex-shrink:0;
+}
+.cs-info { display:flex; flex-direction:column; gap:1px; }
+.cs-label {
+  font-family:'Kanit'; font-size:9px; font-weight:700;
+  letter-spacing:1.5px; text-transform:uppercase; color:var(--text3);
+}
+.cs-val {
+  font-family:'Kanit'; font-size:20px; font-weight:900; color:var(--text);
+  line-height:1;
+}
+.cs-pct {
+  font-size:9.5px; font-weight:700; color:var(--text2);
+}
+.cs-divider {
+  width:1px; height:36px; background:var(--border2); flex-shrink:0;
+}
+.cs-total {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:.4rem 1.2rem; margin-left:.4rem;
+  background:linear-gradient(135deg,rgba(79,126,255,.15),rgba(155,89,255,.10));
+  border:1px solid rgba(79,126,255,.25); border-radius:var(--radius-sm);
+  flex-shrink:0; min-width:80px;
+}
+.cs-total-label {
+  font-family:'Kanit'; font-size:9px; font-weight:700;
+  letter-spacing:.5px; color:var(--blue); text-transform:uppercase;
+  margin-bottom:2px;
+}
+.cs-total-val {
+  font-family:'Kanit'; font-size:26px; font-weight:900;
+  background:linear-gradient(135deg,#4F7EFF,#9B59FF);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text; line-height:1;
+}
+.cs-total-sub {
+  font-size:9px; color:var(--text2); font-weight:600; margin-top:1px;
+}
+@media(max-width:640px){
+  .cmpmsr-summary-row { flex-wrap:wrap; gap:8px; }
+  .cs-divider { display:none; }
+  .cs-item { flex:1 1 calc(33% - 16px); }
+  .cs-total { flex:1 1 100%; flex-direction:row; gap:12px; justify-content:center; }
+}
+
+/* ── Donut chart center label ── */
+.dp-donut-wrap { position:relative; }
+.dp-donut-center {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; pointer-events:none;
+  padding-bottom:20px;
+}
+.dp-donut-center-num { font-family:'Kanit'; font-size:22px; font-weight:800; color:var(--text); line-height:1; }
+.dp-donut-center-lbl { font-size:9px; color:var(--text2); margin-top:3px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+
+/* Donut legend with % */
+.dp-donut-legend {
+  display:flex; flex-direction:column; gap:7px; margin-top:.8rem;
+}
+.dp-legend-row {
+  display:flex; align-items:center; gap:8px;
+  padding:6px 10px; border-radius:var(--radius-sm);
+  background:var(--bg2); border:1px solid var(--border);
+}
+.dp-legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+.dp-legend-name { font-family:'Kanit'; font-size:11px; font-weight:600; color:var(--text); flex:1; }
+.dp-legend-val { font-family:'Kanit'; font-size:12px; font-weight:800; color:var(--text); }
+.dp-legend-pct { font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; flex-shrink:0; }
+
+/* ── Image gallery section ── */
+.dp-img-section {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:1rem 1.2rem; margin-bottom:1.4rem;
+}
+.dp-img-header {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:.9rem;
+}
+.dp-img-title { font-family:'Kanit'; font-size:12px; font-weight:700; color:var(--text); }
+.dp-img-sub { font-size:10px; color:var(--text2); margin-top:1px; }
+.dp-img-add-btn {
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:'Kanit'; font-size:11px; font-weight:700;
+  padding:7px 14px; border-radius:var(--radius-sm); cursor:pointer;
+  border:1.5px dashed rgba(79,126,255,.45); background:rgba(79,126,255,.07);
+  color:var(--blue); transition:all .18s; white-space:nowrap;
+}
+.dp-img-add-btn:hover { background:rgba(79,126,255,.14); border-color:var(--blue); }
+.dp-img-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+  gap:10px;
+}
+.dp-img-item {
+  position:relative; aspect-ratio:4/3; border-radius:var(--radius-md);
+  overflow:hidden; background:var(--surface2); border:1px solid var(--border);
+  cursor:pointer; group:true;
+}
+.dp-img-item img {
+  width:100%; height:100%; object-fit:cover;
+  transition:transform .3s ease;
+}
+.dp-img-item:hover img { transform:scale(1.06); }
+.dp-img-item-overlay {
+  position:absolute; inset:0; background:rgba(0,0,0,.55);
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  opacity:0; transition:opacity .2s;
+}
+.dp-img-item:hover .dp-img-item-overlay { opacity:1; }
+.dp-img-action-btn {
+  width:30px; height:30px; border-radius:50%; border:none;
+  background:rgba(255,255,255,.18); color:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s; backdrop-filter:blur(4px);
+}
+.dp-img-action-btn:hover { background:rgba(255,255,255,.32); }
+.dp-img-empty {
+  grid-column:1/-1; display:flex; flex-direction:column;
+  align-items:center; gap:8px; padding:2rem 1rem; color:var(--text3);
+  font-size:12px; text-align:center;
+}
+.dp-img-empty-ico { font-size:32px; opacity:.4; }
+
+/* Image lightbox */
+.img-lightbox {
+  position:fixed; inset:0; z-index:800;
+  background:rgba(0,0,0,.88); backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .22s;
+}
+.img-lightbox.open { opacity:1; pointer-events:auto; }
+.img-lightbox img {
+  max-width:90vw; max-height:85vh; border-radius:var(--radius-lg);
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+  animation:fadeUp .25s ease both;
+}
+.img-lightbox-close {
+  position:absolute; top:1.2rem; right:1.2rem;
+  width:40px; height:40px; border-radius:50%; border:none;
+  background:rgba(255,255,255,.15); color:#fff; cursor:pointer; font-size:18px;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s;
+}
+.img-lightbox-close:hover { background:rgba(255,255,255,.28); }
 
 /* Sheet config modal */
 .sheet-modal-note { font-size:11px; color:var(--text2); line-height:1.7; margin-bottom:1rem; background:rgba(79,126,255,.08); border:1px solid rgba(79,126,255,.15); border-radius:var(--radius-sm); padding:.8rem 1rem; }
@@ -650,15 +948,9 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   .dot-grid { display:none; }
   /* Hide topbar nav tabs on mobile */
   .nav-tabs { display:none !important; }
-  .topbar { height:50px; margin:.8rem 0 1.2rem; }
-  .topbar-brand .htitle h1 { font-size:11.5px; }
-  .topbar-brand .htitle p { display:none; }
-  .topbar-brand { padding:0 .8rem; gap:8px; }
-  .logo { width:30px; height:30px; border-radius:9px; }
-  .logo span { font-size:9px; }
-  .topbar-clock { padding:0 .7rem; }
-  .clock-t { font-size:16px; letter-spacing:1.5px; }
-  .clock-d { font-size:9px; }
+  .topbar { width:200px; }
+  .wrap { margin-left:200px; }
+  .clock-t { font-size:17px; }
   .admin-toggle-btn span:not(.admin-badge) { display:none; }
   .admin-toggle-btn { padding:0 .7rem; gap:5px; }
   .wrap { padding:0 .9rem 5.5rem; }
@@ -1131,34 +1423,53 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 
 <!-- TOPBAR -->
 <header class="topbar">
+  <!-- Brand -->
   <div class="topbar-brand">
     <div class="logo"><span>GNR3</span></div>
     <div class="htitle">
-      <h1>GNR3 ระบบบริหารจัดการสำนักงาน</h1>
-      <p>GNR3 Office Management System &nbsp;·&nbsp; v 4.0</p>
+      <h1>GNR3 ระบบ</h1>
+      <p>Office Management System</p>
     </div>
   </div>
+
+  <!-- Main nav -->
+  <div class="nav-section-label">เมนูหลัก</div>
   <nav class="nav-tabs" id="nav-tabs">
     <button class="nav-tab active" data-tab="main" onclick="switchTab('main')">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      เมนูหลัก
+      <div class="nav-tab-ico">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      </div>
+      หน้าหลัก
     </button>
     <button class="nav-tab" data-tab="dashboard" onclick="switchTab('dashboard')">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+      <div class="nav-tab-ico">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+      </div>
       Dashboard
     </button>
   </nav>
+
+  <!-- Admin section -->
+  <div class="nav-section-label">จัดการระบบ</div>
+  <div style="padding:.2rem .7rem">
+    <button class="admin-toggle-btn" id="admin-toggle-btn" onclick="handleAdminToggle()" title="Admin Panel">
+      <div class="nav-tab-ico">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <span>Admin Panel</span>
+      <span class="admin-badge" style="display:none" id="admin-badge-dot"></span>
+    </button>
+  </div>
+
+  <!-- Bottom: clock + theme -->
   <div class="topbar-right">
     <div class="topbar-clock">
       <div class="clock-t" id="ct">00:00:00</div>
       <div class="clock-d" id="cd">—</div>
     </div>
-    <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="เปลี่ยนธีม">
+    <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="เปลี่ยนธีม" style="width:100%;border-radius:var(--radius-md);justify-content:flex-start;gap:10px;padding:.6rem .8rem;font-size:12px;font-family:Kanit;font-weight:600">
       <span id="theme-icon">🌙</span>
-    </button>
-    <button class="admin-toggle-btn" id="admin-toggle-btn" onclick="handleAdminToggle()" title="Admin Panel">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      Admin
+      <span id="theme-label">โหมดกลางคืน</span>
     </button>
   </div>
 </header>
@@ -1333,24 +1644,154 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
           </div>
         </div>
         <div class="dp-body">
-          <div class="dp-kpi-row">
-            <div class="dp-kpi-card" style="--kbord:#FF8C42;--kglow:rgba(255,140,66,.10);--kc:#FF8C42"><div class="dp-kpi-label">CM ทั้งหมด</div><div class="dp-kpi-val" id="kv-cm">—</div><div class="dp-kpi-sub">Corrective Maintenance</div></div>
-            <div class="dp-kpi-card" style="--kbord:#4F7EFF;--kglow:rgba(79,126,255,.10);--kc:#4F7EFF"><div class="dp-kpi-label">PM เดือนนี้</div><div class="dp-kpi-val" id="kv-pm">—</div><div class="dp-kpi-sub">Preventive Maintenance</div></div>
-            <div class="dp-kpi-card" style="--kbord:#9B59FF;--kglow:rgba(155,89,255,.10);--kc:#9B59FF"><div class="dp-kpi-label">SR รอดำเนินการ</div><div class="dp-kpi-val" id="kv-sr">—</div><div class="dp-kpi-sub">Service Request</div></div>
-            <div class="dp-kpi-card" style="--kbord:#06D6A0;--kglow:rgba(6,214,160,.10);--kc:#06D6A0"><div class="dp-kpi-label">เสร็จสิ้นแล้ว</div><div class="dp-kpi-val" id="kv-done">—</div><div class="dp-kpi-sub">Completed this month</div></div>
+          <!-- Service KPI cards — main-menu card style -->
+          <div class="svc-kpi-grid">
+
+            <!-- รวมทั้งหมด -->
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#4F7EFF 0%,#7B5CFF 100%)">
+                <div class="sk-deco1"></div><div class="sk-deco2"></div>
+                <div class="svc-kpi-num" id="kv-total">—</div>
+                <span class="svc-kpi-tag">รวม</span>
+                <span class="svc-kpi-badge" id="badge-total">งานทั้งหมด</span>
+                <div class="svc-kpi-ico">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                </div>
+              </div>
+              <div class="svc-kpi-body">
+                <div class="svc-kpi-name">รวมงานทั้งหมด</div>
+                <div class="svc-kpi-desc">CM · PM · SR รวมกัน</div>
+                <div class="svc-kpi-bar-wrap">
+                  <div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-total" style="width:0%;background:linear-gradient(90deg,#4F7EFF,#7B5CFF)"></div></div>
+                  <div class="svc-kpi-bar-label" id="bar-label-total">0% เสร็จสิ้น</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CM -->
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#FF8C42 0%,#FF5569 100%)">
+                <div class="sk-deco1"></div><div class="sk-deco2"></div>
+                <div class="svc-kpi-num" id="kv-cm">—</div>
+                <span class="svc-kpi-tag">CM</span>
+                <span class="svc-kpi-badge" id="badge-cm">รายการ</span>
+                <div class="svc-kpi-ico">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+                </div>
+              </div>
+              <div class="svc-kpi-body">
+                <div class="svc-kpi-name">จำนวนงาน CM</div>
+                <div class="svc-kpi-desc">Corrective Maintenance</div>
+                <div class="svc-kpi-bar-wrap">
+                  <div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-cm" style="width:0%;background:linear-gradient(90deg,#FF8C42,#FF5569)"></div></div>
+                  <div class="svc-kpi-bar-label" id="bar-label-cm">สัดส่วน — %</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PM -->
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#4F7EFF 0%,#00D4FF 100%)">
+                <div class="sk-deco1"></div><div class="sk-deco2"></div>
+                <div class="svc-kpi-num" id="kv-pm">—</div>
+                <span class="svc-kpi-tag">PM</span>
+                <span class="svc-kpi-badge" id="badge-pm">รายการ</span>
+                <div class="svc-kpi-ico">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+              </div>
+              <div class="svc-kpi-body">
+                <div class="svc-kpi-name">จำนวนงาน PM</div>
+                <div class="svc-kpi-desc">Preventive Maintenance</div>
+                <div class="svc-kpi-bar-wrap">
+                  <div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-pm" style="width:0%;background:linear-gradient(90deg,#4F7EFF,#00D4FF)"></div></div>
+                  <div class="svc-kpi-bar-label" id="bar-label-pm">สัดส่วน — %</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SR -->
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#9B59FF 0%,#FF4D8D 100%)">
+                <div class="sk-deco1"></div><div class="sk-deco2"></div>
+                <div class="svc-kpi-num" id="kv-sr">—</div>
+                <span class="svc-kpi-tag">SR</span>
+                <span class="svc-kpi-badge" id="badge-sr">รายการ</span>
+                <div class="svc-kpi-ico">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                </div>
+              </div>
+              <div class="svc-kpi-body">
+                <div class="svc-kpi-name">จำนวนงาน SR</div>
+                <div class="svc-kpi-desc">Service Request</div>
+                <div class="svc-kpi-bar-wrap">
+                  <div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-sr" style="width:0%;background:linear-gradient(90deg,#9B59FF,#FF4D8D)"></div></div>
+                  <div class="svc-kpi-bar-label" id="bar-label-sr">สัดส่วน — %</div>
+                </div>
+              </div>
+            </div>
+
           </div>
+          <!-- Chart row: monthly bar + donut -->
           <div class="dp-chart-row">
+
+            <!-- Monthly bar chart with month selector -->
             <div class="dp-chart-card">
-              <div class="dp-chart-title">CM/PM/SR รายเดือน</div>
-              <div class="dp-chart-sub">6 เดือนล่าสุด</div>
-              <div class="dp-chart-wrap"><canvas id="chart-cmpmsr-monthly"></canvas></div>
+              <div class="dp-chart-header">
+                <div class="dp-chart-header-left">
+                  <div class="dp-chart-title">CM/PM/SR รายเดือน</div>
+                  <div class="dp-chart-sub">แสดงตัวเลขบนแท่งกราฟ</div>
+                </div>
+                <div class="dp-chart-controls">
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span style="font-size:10px;color:var(--text2);font-family:Kanit;font-weight:600;white-space:nowrap">เริ่ม</span>
+                    <select class="dp-month-select" id="cmpmsr-month-start" onchange="setCMPMSRFromTo()">
+                      <option value="0">ม.ค.</option><option value="1">ก.พ.</option><option value="2">มี.ค.</option><option value="3">เม.ย.</option><option value="4">พ.ค.</option><option value="5">มิ.ย.</option><option value="6">ก.ค.</option><option value="7">ส.ค.</option><option value="8">ก.ย.</option><option value="9">ต.ค.</option><option value="10">พ.ย.</option><option value="11">ธ.ค.</option>
+                    </select>
+                    <span style="font-size:10px;color:var(--text2);font-family:Kanit;font-weight:600;white-space:nowrap">ถึง</span>
+                    <select class="dp-month-select" id="cmpmsr-month-end" onchange="setCMPMSRFromTo()">
+                      <option value="0">ม.ค.</option><option value="1">ก.พ.</option><option value="2">มี.ค.</option><option value="3">เม.ย.</option><option value="4">พ.ค.</option><option value="5">มิ.ย.</option><option value="6">ก.ค.</option><option value="7">ส.ค.</option><option value="8">ก.ย.</option><option value="9">ต.ค.</option><option value="10">พ.ย.</option><option value="11" selected>ธ.ค.</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="dp-chart-wrap tall"><canvas id="chart-cmpmsr-monthly"></canvas></div>
+              <!-- Summary row -->
+              <div class="cmpmsr-summary-row" id="cmpmsr-summary-row">
+                <div style="flex:1;text-align:center;color:var(--text3);font-size:11px;font-family:Kanit">
+                  โหลดกราฟเพื่อดูสรุป...
+                </div>
+              </div>
             </div>
-            <div class="dp-chart-card">
-              <div class="dp-chart-title">สัดส่วนตามประเภท</div>
-              <div class="dp-chart-sub">CM / PM / SR</div>
-              <div class="dp-chart-wrap"><canvas id="chart-cmpmsr-donut"></canvas></div>
+
+            <!-- Image gallery — replaces donut chart -->
+            <div class="dp-chart-card" style="display:flex;flex-direction:column">
+              <div class="dp-chart-header">
+                <div class="dp-chart-header-left">
+                  <div class="dp-chart-title">📎 ภาพประกอบ</div>
+                  <div class="dp-chart-sub">แนบรูปประกอบรายงาน — เก็บใน browser</div>
+                </div>
+                <label class="dp-img-add-btn" style="padding:5px 11px;font-size:10.5px">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  เพิ่มรูป
+                  <input type="file" accept="image/*" multiple style="display:none" onchange="addServiceImages(this)">
+                </label>
+              </div>
+              <div class="dp-img-grid" id="service-img-grid" style="flex:1;min-height:180px;align-content:start">
+                <div class="dp-img-empty">
+                  <div class="dp-img-empty-ico">🖼️</div>
+                  <div style="font-size:11px">กด <strong>เพิ่มรูป</strong> เพื่อแนบไฟล์</div>
+                </div>
+              </div>
             </div>
           </div>
+
+          <!-- Image lightbox -->
+          <div class="img-lightbox" id="img-lightbox" onclick="closeLightbox()">
+            <button class="img-lightbox-close" onclick="closeLightbox()">✕</button>
+            <img id="lightbox-img" src="" alt="">
+          </div>
+
           <div class="dp-table-card">
             <div class="dp-table-head"><div class="dp-table-title">รายการล่าสุด</div><button class="dp-filter-btn" onclick="loadPanelData('cmpmsr')">โหลดจาก Sheets</button></div>
             <div style="overflow-x:auto"><table class="dp-table"><thead><tr><th>เลขที่</th><th>ประเภท</th><th>รายการ</th><th>อาคาร</th><th>วันที่</th><th>สถานะ</th></tr></thead><tbody id="tbody-cmpmsr"><tr><td colspan="6"><div class="dp-empty"><div class="dp-empty-ico">📋</div><div>ยังไม่ได้เชื่อมต่อ Google Sheets</div></div></td></tr></tbody></table></div>
@@ -1849,6 +2290,7 @@ function renderDashboard(){
   // Default to overview panel
   const ovBtn = document.querySelector('.dash-nav-item[data-panel="overview"]');
   switchDashPanel('overview', ovBtn);
+  loadServiceImages();
   setTimeout(()=>{ initAllCharts(); }, 100);
 }
 
@@ -1965,7 +2407,25 @@ function renderCMPMSR(data){
   const pm=data.filter(r=>r['ประเภท']?.toUpperCase()==='PM').length;
   const sr=data.filter(r=>r['ประเภท']?.toUpperCase()==='SR').length;
   const done=data.filter(r=>r['สถานะ']?.includes('เสร็จ')||r['สถานะ']?.toLowerCase()==='done'||r['สถานะ']?.toLowerCase()==='complete').length;
-  setTxt('kv-cm',cm); setTxt('kv-pm',pm); setTxt('kv-sr',sr); setTxt('kv-done',done);
+  const total=cm+pm+sr;
+  // Fill new card IDs
+  setTxt('kv-cm',cm); setTxt('kv-pm',pm); setTxt('kv-sr',sr); setTxt('kv-total',total);
+  // Update badges
+  setTxt('badge-cm',cm+' รายการ'); setTxt('badge-pm',pm+' รายการ');
+  setTxt('badge-sr',sr+' รายการ'); setTxt('badge-total',total+' งาน');
+  // Update progress bars (proportion)
+  const pctDone = total>0?Math.round(done/total*100):0;
+  const pctCM   = total>0?Math.round(cm/total*100):0;
+  const pctPM   = total>0?Math.round(pm/total*100):0;
+  const pctSR   = total>0?Math.round(sr/total*100):0;
+  const setBar=(id,pct)=>{const e=document.getElementById(id);if(e){setTimeout(()=>e.style.width=pct+'%',200);}};
+  setBar('bar-total',pctDone); setBar('bar-cm',pctCM); setBar('bar-pm',pctPM); setBar('bar-sr',pctSR);
+  setTxt('bar-label-total',pctDone+'% เสร็จสิ้น');
+  setTxt('bar-label-cm','สัดส่วน '+pctCM+'%');
+  setTxt('bar-label-pm','สัดส่วน '+pctPM+'%');
+  setTxt('bar-label-sr','สัดส่วน '+pctSR+'%');
+  // keep kv-done for overview
+  setTxt('kv-done',done);
   const tbody = document.getElementById('tbody-cmpmsr');
   tbody.innerHTML = data.slice(0,20).map(r=>`<tr>
     <td>${r['เลขที่']||r['No']||'-'}</td>
@@ -1975,7 +2435,10 @@ function renderCMPMSR(data){
     <td>${r['วันที่']||r['Date']||'-'}</td>
     <td><span class="dp-pill ${getStatusCls(r['สถานะ']||r['Status'])}">${r['สถานะ']||r['Status']||'-'}</span></td>
   </tr>`).join('');
-  updateCMPMSRCharts(cm,pm,sr,data);
+  // Update data source then rebuild charts
+  _cmpmsrAllData.cm = data.map(r=>r['ประเภท']?.toUpperCase()==='CM'?1:0);
+  buildCMPMSRChart();
+  buildDonutChart(cm,pm,sr);
 }
 function getStatusCls(s){
   if(!s)return 'closed';
@@ -2127,10 +2590,20 @@ function initAllCharts(){
   const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'];
   // CM/PM/SR demo
   if(!SHEET_CONFIGS.cmpmsr){ destroyChart('cmpmsr-monthly'); destroyChart('cmpmsr-donut');
-    const c1=document.getElementById('chart-cmpmsr-monthly');
-    if(c1) DASH_CHARTS['cmpmsr-monthly']=new Chart(c1,{type:'bar',data:{labels:months,datasets:[{label:'CM',data:[12,8,15,10,14,11],backgroundColor:'rgba(255,140,66,0.7)',borderRadius:6},{label:'PM',data:[20,22,18,25,21,23],backgroundColor:'rgba(79,126,255,0.7)',borderRadius:6},{label:'SR',data:[5,7,4,8,6,9],backgroundColor:'rgba(155,89,255,0.7)',borderRadius:6}]},options:{...CHART_DEFAULTS}});
-    const c2=document.getElementById('chart-cmpmsr-donut');
-    if(c2) DASH_CHARTS['cmpmsr-donut']=new Chart(c2,{type:'doughnut',data:{labels:['CM','PM','SR'],datasets:[{data:[70,129,39],backgroundColor:['rgba(255,140,66,0.8)','rgba(79,126,255,0.8)','rgba(155,89,255,0.8)'],borderWidth:0}]},options:{plugins:{legend:{...CHART_DEFAULTS.plugins.legend,position:'bottom'}},cutout:'65%'}});
+    // Demo data for new cards
+    const demoCM=12,demoPM=22,demoSR=7,demoTotal=demoCM+demoPM+demoSR,demoDone=18;
+    setTxt('kv-total',demoTotal); setTxt('kv-cm',demoCM); setTxt('kv-pm',demoPM); setTxt('kv-sr',demoSR); setTxt('kv-done',demoDone);
+    setTxt('badge-total',demoTotal+' งาน'); setTxt('badge-cm',demoCM+' รายการ'); setTxt('badge-pm',demoPM+' รายการ'); setTxt('badge-sr',demoSR+' รายการ');
+    const pctDone=Math.round(demoDone/demoTotal*100);
+    const setBarD=(id,pct)=>{const e=document.getElementById(id);if(e){setTimeout(()=>e.style.width=pct+'%',400);}};
+    setBarD('bar-total',pctDone); setBarD('bar-cm',Math.round(demoCM/demoTotal*100)); setBarD('bar-pm',Math.round(demoPM/demoTotal*100)); setBarD('bar-sr',Math.round(demoSR/demoTotal*100));
+    setTxt('bar-label-total',pctDone+'% เสร็จสิ้น (ตัวอย่าง)');
+    setTxt('bar-label-cm','สัดส่วน '+Math.round(demoCM/demoTotal*100)+'%');
+    setTxt('bar-label-pm','สัดส่วน '+Math.round(demoPM/demoTotal*100)+'%');
+    setTxt('bar-label-sr','สัดส่วน '+Math.round(demoSR/demoTotal*100)+'%');
+    // Charts
+    buildCMPMSRChart();
+    buildDonutChart(demoCM, demoPM, demoSR);
   }
   // Utility demo
   if(!SHEET_CONFIGS.utility){ destroyChart('utility-trend'); destroyChart('utility-bld');
@@ -2951,16 +3424,20 @@ const THEME_KEY = 'gnr3_theme';
 function toggleTheme(){
   const isLight = document.body.classList.toggle('light-mode');
   localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
-  document.getElementById('theme-icon').textContent = isLight ? '☀️' : '🌙';
-  // Re-init charts with new colors
-  setTimeout(()=>initAllCharts(), 100);
+  const ico = document.getElementById('theme-icon');
+  const lbl = document.getElementById('theme-label');
+  if(ico) ico.textContent = isLight ? '☀️' : '🌙';
+  if(lbl) lbl.textContent = isLight ? 'โหมดกลางวัน' : 'โหมดกลางคืน';
+  setTimeout(()=>{ if(typeof initAllCharts==='function') initAllCharts(); }, 100);
 }
 function initTheme(){
   const saved = localStorage.getItem(THEME_KEY);
   if(saved === 'light'){
     document.body.classList.add('light-mode');
     const ico = document.getElementById('theme-icon');
+    const lbl = document.getElementById('theme-label');
     if(ico) ico.textContent = '☀️';
+    if(lbl) lbl.textContent = 'โหมดกลางวัน';
   }
 }
 
@@ -2974,6 +3451,253 @@ function initMiscCharts(){
   const c2=document.getElementById('chart-misc-cat');
   if(c2) DASH_CHARTS['misc-cat']=new Chart(c2,{type:'doughnut',data:{labels:['หมวด A','หมวด B','หมวด C','หมวด D'],datasets:[{data:[35,28,22,15],backgroundColor:['rgba(79,126,255,0.8)','rgba(155,89,255,0.8)','rgba(6,214,160,0.8)','rgba(255,209,102,0.8)'],borderWidth:0}]},options:{plugins:{legend:{labels:{color:'#8B93C4',font:{family:'Kanit',size:11}},position:'bottom'}},cutout:'55%'}});
 }
+
+
+/* ══ SERVICE CHART — Month Range Selector ══ */
+let _cmpmsrRange = 6;
+const _cmpmsrAllData = {
+  labels: ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'],
+  cm:  [12,8,15,10,14,11,9,13,16,10,12,14],
+  pm:  [20,22,18,25,21,23,19,24,20,22,25,21],
+  sr:  [5,7,4,8,6,9,5,7,8,6,4,7]
+};
+
+function setCMPMSRFromTo(){
+  buildCMPMSRChart();
+}
+
+function buildCMPMSRChart(){
+  const startEl = document.getElementById('cmpmsr-month-start');
+  const endEl   = document.getElementById('cmpmsr-month-end');
+  let start = startEl ? parseInt(startEl.value) : 0;
+  let end   = endEl   ? parseInt(endEl.value)   : 11;
+  if(start > end){ end = start; if(endEl) endEl.value = end; }
+
+  const labels = _cmpmsrAllData.labels.slice(start, end+1);
+  const cm     = _cmpmsrAllData.cm.slice(start, end+1);
+  const pm     = _cmpmsrAllData.pm.slice(start, end+1);
+  const sr     = _cmpmsrAllData.sr.slice(start, end+1);
+
+  // ── Summary footer: sum over selected range ──
+  const sumCM = cm.reduce((a,b)=>a+b,0);
+  const sumPM = pm.reduce((a,b)=>a+b,0);
+  const sumSR = sr.reduce((a,b)=>a+b,0);
+  const sumAll = sumCM + sumPM + sumSR;
+  updateChartSummary(sumCM, sumPM, sumSR, sumAll);
+
+  destroyChart('cmpmsr-monthly');
+  const ctx = document.getElementById('chart-cmpmsr-monthly');
+  if(!ctx) return;
+
+  const isLight = document.body.classList.contains('light-mode');
+  const lblColor = isLight ? 'rgba(26,35,64,0.85)' : 'rgba(255,255,255,0.90)';
+
+  DASH_CHARTS['cmpmsr-monthly'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        { label:'CM', data:cm, backgroundColor:'rgba(255,140,66,0.82)', borderRadius:6, borderSkipped:false },
+        { label:'PM', data:pm, backgroundColor:'rgba(79,126,255,0.82)', borderRadius:6, borderSkipped:false },
+        { label:'SR', data:sr, backgroundColor:'rgba(155,89,255,0.82)', borderRadius:6, borderSkipped:false },
+      ]
+    },
+    options:{
+      ...CHART_DEFAULTS,
+      plugins:{
+        ...CHART_DEFAULTS.plugins,
+        legend:{ labels:{ color:'#8B93C4', font:{ family:'Kanit', size:11 } } }
+      },
+      animation:{ duration:600 },
+    },
+    plugins:[{
+      id:'barLabels',
+      afterDatasetsDraw(chart){
+        const {ctx:c2} = chart;
+        c2.save();
+        chart.data.datasets.forEach((ds, di)=>{
+          const meta = chart.getDatasetMeta(di);
+          meta.data.forEach((bar, i)=>{
+            const val = ds.data[i];
+            if(!val) return;
+            c2.fillStyle = lblColor;
+            c2.font = 'bold 10px Kanit, sans-serif';
+            c2.textAlign = 'center';
+            c2.textBaseline = 'bottom';
+            c2.fillText(val, bar.x, bar.y - 3);
+          });
+        });
+        c2.restore();
+      }
+    }]
+  });
+}
+
+/* ── Summary row below chart ── */
+function updateChartSummary(cm, pm, sr, total){
+  const el = document.getElementById('cmpmsr-summary-row');
+  if(!el) return;
+  const pctCM = total>0 ? Math.round(cm/total*100) : 0;
+  const pctPM = total>0 ? Math.round(pm/total*100) : 0;
+  const pctSR = total>0 ? Math.round(sr/total*100) : 0;
+  el.innerHTML = `
+    <div class="cs-item cs-cm">
+      <div class="cs-dot" style="background:#FF8C42"></div>
+      <div class="cs-info">
+        <div class="cs-label">CM</div>
+        <div class="cs-val">${cm}</div>
+        <div class="cs-pct">${pctCM}%</div>
+      </div>
+    </div>
+    <div class="cs-divider"></div>
+    <div class="cs-item cs-pm">
+      <div class="cs-dot" style="background:#4F7EFF"></div>
+      <div class="cs-info">
+        <div class="cs-label">PM</div>
+        <div class="cs-val">${pm}</div>
+        <div class="cs-pct">${pctPM}%</div>
+      </div>
+    </div>
+    <div class="cs-divider"></div>
+    <div class="cs-item cs-sr">
+      <div class="cs-dot" style="background:#9B59FF"></div>
+      <div class="cs-info">
+        <div class="cs-label">SR</div>
+        <div class="cs-val">${sr}</div>
+        <div class="cs-pct">${pctSR}%</div>
+      </div>
+    </div>
+    <div class="cs-total">
+      <div class="cs-total-label">รวมทั้งหมด</div>
+      <div class="cs-total-val">${total}</div>
+      <div class="cs-total-sub">งาน</div>
+    </div>
+  `;
+}
+
+/* ══ DONUT LEGEND WITH % ══ */
+function updateDonutLegend(cm, pm, sr){
+  const total = cm + pm + sr;
+  setTxt('donut-total-num', total);
+  // legend values + pct
+  setTxt('leg-cm', cm); setTxt('leg-pm', pm); setTxt('leg-sr', sr);
+  const pct = v => total > 0 ? Math.round(v/total*100)+'%' : '0%';
+  setTxt('leg-cm-pct', pct(cm));
+  setTxt('leg-pm-pct', pct(pm));
+  setTxt('leg-sr-pct', pct(sr));
+}
+
+function buildDonutChart(cm, pm, sr){
+  destroyChart('cmpmsr-donut');
+  const ctx = document.getElementById('chart-cmpmsr-donut');
+  if(!ctx) return;
+  DASH_CHARTS['cmpmsr-donut'] = new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      labels:['CM','PM','SR'],
+      datasets:[{
+        data:[cm, pm, sr],
+        backgroundColor:['rgba(255,140,66,0.88)','rgba(79,126,255,0.88)','rgba(155,89,255,0.88)'],
+        borderWidth:0, hoverOffset:8
+      }]
+    },
+    options:{
+      plugins:{
+        legend:{ display:false }, // using custom legend below
+        tooltip:{
+          callbacks:{
+            label(ctx){
+              const total = ctx.dataset.data.reduce((a,b)=>a+b,0);
+              const pct = Math.round(ctx.raw/total*100);
+              return ' '+ctx.label+': '+ctx.raw+' ('+pct+'%)';
+            }
+          }
+        }
+      },
+      cutout:'68%',
+      animation:{ duration:700 }
+    }
+  });
+  updateDonutLegend(cm, pm, sr);
+}
+
+/* ══ SERVICE IMAGE GALLERY ══ */
+const SVC_IMG_KEY = 'gnr3_service_images';
+let _svcImages = []; // [{id, name, dataUrl}]
+
+function loadServiceImages(){
+  try{ _svcImages = JSON.parse(localStorage.getItem(SVC_IMG_KEY)||'[]'); }catch(e){ _svcImages=[]; }
+  renderServiceImages();
+}
+
+function addServiceImages(input){
+  const files = Array.from(input.files);
+  if(!files.length) return;
+  let loaded = 0;
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      _svcImages.push({ id: Date.now()+'_'+Math.random(), name:file.name, dataUrl:e.target.result });
+      loaded++;
+      if(loaded===files.length){
+        saveServiceImages();
+        renderServiceImages();
+        showToast('✓ เพิ่มรูปภาพ '+files.length+' รูปเรียบร้อย');
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function saveServiceImages(){
+  try{ localStorage.setItem(SVC_IMG_KEY, JSON.stringify(_svcImages)); }catch(e){
+    showToast('⚠ พื้นที่จัดเก็บไม่พอ — ลองลบรูปบางรูปก่อนครับ');
+  }
+}
+
+function deleteServiceImage(id){
+  _svcImages = _svcImages.filter(img=>img.id!==id);
+  saveServiceImages();
+  renderServiceImages();
+  showToast('🗑 ลบรูปภาพแล้ว');
+}
+
+function openLightbox(dataUrl){
+  const lb = document.getElementById('img-lightbox');
+  const img = document.getElementById('lightbox-img');
+  if(!lb||!img) return;
+  img.src = dataUrl;
+  lb.classList.add('open');
+}
+function closeLightbox(){
+  const lb = document.getElementById('img-lightbox');
+  if(lb) lb.classList.remove('open');
+}
+
+function renderServiceImages(){
+  const grid = document.getElementById('service-img-grid');
+  if(!grid) return;
+  if(!_svcImages.length){
+    grid.innerHTML = '<div class="dp-img-empty"><div class="dp-img-empty-ico">🖼️</div><div>ยังไม่มีรูปภาพ — กด <strong>เพิ่มรูปภาพ</strong> เพื่อแนบไฟล์</div></div>';
+    return;
+  }
+  grid.innerHTML = _svcImages.map(img=>`
+    <div class="dp-img-item">
+      <img src="${img.dataUrl}" alt="${img.name}" onclick="openLightbox('${img.dataUrl}')">
+      <div class="dp-img-item-overlay">
+        <button class="dp-img-action-btn" onclick="openLightbox('${img.dataUrl}')" title="ดูรูป">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button class="dp-img-action-btn" onclick="deleteServiceImage('${img.id}')" title="ลบรูป" style="background:rgba(255,85,105,.30)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Init service images on dashboard load
 
 </script>
 </body>
