@@ -39,11 +39,11 @@ body.light-mode body::after { opacity:.07; }
 }
 .theme-toggle-btn:hover { border-color:var(--blue); color:var(--blue); transform:rotate(20deg); background:rgba(79,126,255,.10); }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Sarabun','Kanit',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);overflow-x:hidden;display:flex;}
+body{font-family:'Sarabun','Kanit',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);overflow-x:hidden;}
 body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:var(--bgimg,none);background-size:cover;background-position:center;background-attachment:scroll;opacity:.13;filter:saturate(.6) brightness(.7);mix-blend-mode:luminosity;will-change:auto;transform:translateZ(0);}
 .dot-grid{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18;background-image:radial-gradient(circle,rgba(255,255,255,.12) 1px,transparent 1px);background-size:28px 28px;transform:translateZ(0);}
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle at 15% 20%,rgba(79,126,255,.10) 0%,transparent 45%),radial-gradient(circle at 85% 75%,rgba(155,89,255,.10) 0%,transparent 45%),radial-gradient(circle at 55% 45%,rgba(6,214,160,.05) 0%,transparent 35%);}
-.wrap{position:relative;z-index:1;flex:1;min-width:0;padding:0 1.8rem 5rem;overflow-x:hidden;}
+.wrap{position:relative;z-index:1;width:calc(100% - 240px);max-width:calc(100% - 240px);margin-left:240px;padding:0 1.8rem 5rem;overflow-x:hidden;}
 
 /* ══ SIDEBAR ══ */
 /* Fixed left sidebar — full height */
@@ -60,14 +60,13 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   margin:0; height:100vh; border-radius:0;
 }
 .topbar::-webkit-scrollbar { display:none; }
-.topbar.hidden { display:flex !important; } /* sidebar always visible */
+.topbar.hidden { display:flex !important; } /* sidebar always visible on desktop — mobile overrides below */
 body.light-mode .topbar {
   background:rgba(238,241,252,0.99);
   box-shadow:6px 0 32px rgba(26,35,64,.12);
 }
 
-/* Push wrap to the right */
-.wrap { margin-left:240px; }
+/* Push wrap to the right — handled above */
 
 .topbar-brand {
   display:flex; align-items:center; gap:11px;
@@ -147,7 +146,8 @@ body.light-mode .topbar {
 .view.active{display:block;}
 .view-main.active{animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both;}
 .view-sub.active{animation:slideRight .4s cubic-bezier(.22,1,.36,1) both;}
-.view-dash.active{animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both;}
+/* view-dash uses flex (sidebar + content) */
+.view-dash.active{display:flex !important; animation:none; min-height:calc(100vh - 120px);}
 .view-admin.active{animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both;}
 
 @keyframes slideDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
@@ -216,8 +216,8 @@ body.light-mode .topbar {
 .dash-settings-btn:hover { color:var(--cyan); border-color:rgba(0,212,255,.35); }
 
 /* ── Content area ── */
-.dash-content { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-.dash-panel-view { display:none; flex:1; flex-direction:column; overflow-y:auto; }
+.dash-content { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0; }
+.dash-panel-view { display:none; flex:1; flex-direction:column; overflow-y:auto; min-height:0; }
 .dash-panel-view.active { display:flex; animation:fadeUp .35s cubic-bezier(.22,1,.36,1) both; }
 
 /* ── Panel header ── */
@@ -942,17 +942,30 @@ body.light-mode .svc-kpi-bar-track { background:rgba(0,0,0,.08); }
 /* ══════════════════════════════
    MOBILE RESPONSIVE
 ══════════════════════════════ */
-@media(max-width:640px){
-  /* ── Performance ── */
+@media(max-width:768px){
+  /* ── Perf ── */
   body::after { display:none; }
-  .dot-grid { display:none; }
+  .dot-grid  { display:none; }
 
-  /* ── SIDEBAR: hidden on mobile ── */
-  .topbar { display:none !important; }
-  .wrap { margin-left:0 !important; padding:0 .9rem calc(80px + env(safe-area-inset-bottom,0px)) .9rem; }
-
-  /* ── Bottom padding to clear bottom nav ── */
-  body { padding-bottom:0; }
+  /* ── SIDEBAR → hidden completely, bottom nav takes over ── */
+  .topbar,
+  .topbar.hidden { display:none !important; }
+  body    { display:block; }          /* cancel flex — no sidebar */
+  .wrap   {
+    margin-left:0 !important;
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+    /* top padding small, bottom = bottom-nav height + safe area */
+    padding:0.8rem .9rem calc(72px + env(safe-area-inset-bottom,0px)) .9rem !important;
+  }
+  /* Dashboard view has no extra top spacing needed — topbar inside it provides it */
+  #view-dash.active { padding-top:0 !important; }
+  /* Let dash-layout span full width (break out of wrap side padding) */
+  #view-dash .dash-layout {
+    margin-left: -.9rem;
+    margin-right: -.9rem;
+  }
 
   /* ── Main grid ── */
   .main-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
@@ -960,33 +973,73 @@ body.light-mode .svc-kpi-bar-track { background:rgba(0,0,0,.08); }
   .cat-big-ico { width:54px; height:54px; border-radius:17px; }
   .cat-big-ico svg { width:28px; height:28px; }
 
-  /* ── Dashboard: full screen, no sidebar ── */
-  .dp-kpi-row { grid-template-columns:repeat(2,1fr); }
-  .dp-chart-row,.dp-chart-3 { grid-template-columns:1fr; }
-
-  /* Dashboard full width on mobile */
-  .view-dash {
-    position:fixed !important; inset:0 !important; z-index:100;
-    flex-direction:column; background:var(--bg);
-    padding-bottom:calc(68px + env(safe-area-inset-bottom,0px));
+  /* ── Dashboard: sidebar hidden, full-width content ── */
+  .view-dash { width:100% !important; }
+  .view-dash.active {
+    display:block !important;
+    width:100% !important;
   }
-  .view-dash .dash-layout { display:none !important; }
+  /* Show dash-layout as block (not flex) on mobile so content stacks */
+  .view-dash .dash-layout {
+    display:flex !important;
+    flex-direction:column !important;
+    min-height:unset !important;
+    border-radius:0 !important;
+    border-left:none !important;
+    border-right:none !important;
+  }
+  /* Hide sidebar tab bar on mobile, show content full-width */
+  .view-dash .dash-topbar {
+    overflow-x:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
   .view-dash .dash-content {
-    width:100%; height:100%; overflow-y:auto;
+    display:flex !important;
+    flex-direction:column !important;
+    width:100% !important;
+    height:auto !important;
+    overflow:visible !important;
+    min-height:unset !important;
   }
-  .dp-header { padding:.9rem 1rem .7rem; }
-  .dp-body { padding:1rem; }
-  .dp-building-tabs { padding:.7rem 1rem .5rem; }
+  .dash-panel-view {
+    height:auto !important;
+    overflow:visible !important;
+    flex:none !important;
+    min-height:unset !important;
+  }
+  .dash-panel-view.active {
+    display:block !important;
+  }
+  .dp-body {
+    height:auto !important;
+    overflow:visible !important;
+    flex:none !important;
+  }
+  /* Fix chart canvas heights on mobile */
+  .dp-chart-wrap { height:180px !important; }
+  .dp-chart-wrap.tall { height:200px !important; }
+  .dp-chart-wrap.short { height:130px !important; }
+  .dp-kpi-row    { grid-template-columns:repeat(2,1fr); }
+  .dp-chart-row, .dp-chart-3 { grid-template-columns:1fr; }
+  .dp-header     { padding:.9rem 1rem .7rem; }
+  .dp-body       { padding:1rem; }
+  .dp-building-tabs { padding:.6rem 1rem .4rem; }
+  .svc-kpi-grid  { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .svc-kpi-zone  { height:100px; }
+  .svc-kpi-num   { font-size:44px; }
 
   /* ── Sub view ── */
   .sub-grid { grid-template-columns:repeat(2,1fr) !important; gap:10px !important; }
   .sub-header-bar { height:50px; border-radius:var(--radius-lg); }
-  .sub-cat-ico { width:28px; height:28px; border-radius:8px; }
+  .sub-cat-ico  { width:28px; height:28px; border-radius:8px; }
   .sub-cat-ico svg { width:15px; height:15px; }
   .sub-meta-title { font-size:14px; }
   .sub-stat-pills { display:none; }
   .sub-back-btn { padding:0 .9rem; font-size:11px; }
   .admin-sections .admin-sec-head-right .admin-btn-sm:not(.danger) { display:none; }
+
+  /* toast position above bottom nav */
+  .toast { bottom:calc(80px + env(safe-area-inset-bottom,0px)); right:1rem; }
 }
 
 /* ══════════════════════════════════
@@ -1139,25 +1192,115 @@ body.light-mode .bottom-nav {
 .bnav-dash-sub-item.active .bnav-label { font-weight:800; }
 
 /* per-panel chip colors */
-.bnav-dash-sub-item[data-panel="cmpmsr"] { --dsub-chip:rgba(255,140,66,0.20); --dsub-glow:rgba(255,140,66,0.30); }
-.bnav-dash-sub-item[data-panel="utility"] { --dsub-chip:rgba(255,209,102,0.18); --dsub-glow:rgba(255,209,102,0.28); }
-.bnav-dash-sub-item[data-panel="supply"]  { --dsub-chip:rgba(6,214,160,0.18);  --dsub-glow:rgba(6,214,160,0.28); }
-.bnav-dash-sub-item[data-panel="project"] { --dsub-chip:rgba(155,89,255,0.20); --dsub-glow:rgba(155,89,255,0.30); }
-.bnav-dash-sub-item[data-panel="otair"]   { --dsub-chip:rgba(0,212,255,0.18);  --dsub-glow:rgba(0,212,255,0.28); }
+.bnav-dash-sub-item[data-panel="cmpmsr"]  { --dsub-chip:rgba(255,140,66,0.20);  --dsub-glow:rgba(255,140,66,0.30); }
+.bnav-dash-sub-item[data-panel="cm"]      { --dsub-chip:rgba(255,85,105,0.20);   --dsub-glow:rgba(255,85,105,0.30); }
+.bnav-dash-sub-item[data-panel="pm"]      { --dsub-chip:rgba(79,126,255,0.20);   --dsub-glow:rgba(79,126,255,0.30); }
+.bnav-dash-sub-item[data-panel="sr"]      { --dsub-chip:rgba(155,89,255,0.20);   --dsub-glow:rgba(155,89,255,0.30); }
+.bnav-dash-sub-item[data-panel="overview"]{ --dsub-chip:rgba(255,77,141,0.18);   --dsub-glow:rgba(255,77,141,0.28); }
+.bnav-dash-sub-item[data-panel="misc"]    { --dsub-chip:rgba(79,126,255,0.18);   --dsub-glow:rgba(79,126,255,0.28); }
+.bnav-dash-sub-item[data-panel="utility"] { --dsub-chip:rgba(255,209,102,0.18);  --dsub-glow:rgba(255,209,102,0.28); }
+.bnav-dash-sub-item[data-panel="supply"]  { --dsub-chip:rgba(6,214,160,0.18);    --dsub-glow:rgba(6,214,160,0.28); }
+.bnav-dash-sub-item[data-panel="project"] { --dsub-chip:rgba(155,89,255,0.20);   --dsub-glow:rgba(155,89,255,0.30); }
+.bnav-dash-sub-item[data-panel="otair"]   { --dsub-chip:rgba(0,212,255,0.18);    --dsub-glow:rgba(0,212,255,0.28); }
 
 /* active colored icon per panel */
-.bnav-dash-sub-item[data-panel="cmpmsr"].active { color:#FF8C42; }
-.bnav-dash-sub-item[data-panel="utility"].active { color:#FFD166; }
-.bnav-dash-sub-item[data-panel="supply"].active  { color:#06D6A0; }
-.bnav-dash-sub-item[data-panel="project"].active { color:#BC8FFF; }
-.bnav-dash-sub-item[data-panel="otair"].active   { color:#00D4FF; }
+.bnav-dash-sub-item[data-panel="cmpmsr"].active  { color:#FF8C42; }
+.bnav-dash-sub-item[data-panel="cm"].active       { color:#FF5569; }
+.bnav-dash-sub-item[data-panel="pm"].active       { color:#4F7EFF; }
+.bnav-dash-sub-item[data-panel="sr"].active       { color:#BC8FFF; }
+.bnav-dash-sub-item[data-panel="overview"].active { color:#FF4D8D; }
+.bnav-dash-sub-item[data-panel="misc"].active     { color:#4F7EFF; }
+.bnav-dash-sub-item[data-panel="utility"].active  { color:#FFD166; }
+.bnav-dash-sub-item[data-panel="supply"].active   { color:#06D6A0; }
+.bnav-dash-sub-item[data-panel="project"].active  { color:#BC8FFF; }
+.bnav-dash-sub-item[data-panel="otair"].active    { color:#00D4FF; }
 .bnav-dash-sub-item.active .bnav-ico { color:#fff; }
 .bnav-dash-sub-item.active .bnav-label { color:inherit; }
 
-@media(max-width:640px){
+/* ══ BOOKING CALENDAR ══ */
+.booking-cal-grid {
+  display:grid; grid-template-columns:repeat(7,1fr); gap:4px;
+}
+.booking-cal-dayname {
+  text-align:center; font-family:Kanit; font-size:10px; font-weight:700;
+  color:var(--text3); padding:6px 2px; letter-spacing:.5px;
+}
+.booking-cal-cell {
+  min-height:80px; border-radius:var(--radius-sm); padding:5px 6px;
+  background:var(--bg2); border:1px solid var(--border);
+  cursor:pointer; transition:border-color .18s, background .18s;
+  display:flex; flex-direction:column; gap:3px;
+  position:relative;
+}
+.booking-cal-cell:hover { border-color:var(--blue); background:rgba(79,126,255,.05); }
+.booking-cal-cell.today { border-color:var(--blue) !important; background:rgba(79,126,255,.08) !important; }
+.booking-cal-cell.today .cal-day-num { color:var(--blue); font-weight:800; }
+.booking-cal-cell.other-month { opacity:.35; pointer-events:none; }
+.booking-cal-cell.has-urgent { border-color:rgba(255,77,141,.5) !important; }
+.cal-day-num {
+  font-family:Kanit; font-size:12px; font-weight:700; color:var(--text); line-height:1;
+}
+.cal-booking-chip {
+  display:flex; align-items:center; gap:4px;
+  font-family:Kanit; font-size:9px; font-weight:700;
+  padding:2px 6px; border-radius:6px; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; max-width:100%;
+  color:#fff;
+}
+.cal-booking-chip.parking  { background:rgba(79,126,255,.85); }
+.cal-booking-chip.library  { background:rgba(6,214,160,.85); }
+.cal-booking-chip.playground { background:rgba(255,140,66,.85); }
+.cal-booking-chip.meeting  { background:rgba(155,89,255,.85); }
+.cal-booking-chip.pending  { background:rgba(255,209,102,.85); color:#1a1728; }
+.cal-booking-chip.cancel   { background:rgba(255,77,141,.85); }
+.cal-more-badge {
+  font-size:9px; color:var(--text3); font-family:Kanit; font-weight:600;
+  margin-top:auto; align-self:flex-end;
+}
+@media(max-width:768px){
+  .booking-cal-cell { min-height:56px; padding:4px; }
+  .cal-booking-chip { font-size:8px; padding:1px 4px; }
+  .cal-day-num { font-size:11px; }
+}
+
+/* ══ NOTIFICATION FEED ══ */
+.notif-feed-item {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:.85rem 1rem; border-radius:var(--radius-md);
+  background:var(--bg2); border:1px solid var(--border);
+  border-left:3px solid var(--ncolor, var(--blue));
+  transition:border-color .18s, background .18s;
+  cursor:pointer;
+}
+.notif-feed-item:hover { background:rgba(255,255,255,.03); border-color:var(--ncolor,var(--blue)); }
+.notif-ico-wrap {
+  width:36px; height:36px; border-radius:11px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--nbg, rgba(79,126,255,.15));
+  color:var(--ncolor, var(--blue));
+}
+.notif-body { flex:1; min-width:0; }
+.notif-title { font-family:Kanit; font-size:12px; font-weight:700; color:var(--text); line-height:1.3; }
+.notif-desc  { font-size:11px; color:var(--text2); margin-top:2px; line-height:1.4; }
+.notif-meta  { display:flex; align-items:center; gap:8px; margin-top:5px; flex-wrap:wrap; }
+.notif-tag   { font-size:9px; font-weight:700; padding:2px 8px; border-radius:20px; letter-spacing:.5px; }
+.notif-tag.cm      { color:#FF8C42; background:rgba(255,140,66,.12); }
+.notif-tag.pm      { color:#4F7EFF; background:rgba(79,126,255,.12); }
+.notif-tag.sr      { color:#9B59FF; background:rgba(155,89,255,.12); }
+.notif-tag.project { color:#06D6A0; background:rgba(6,214,160,.12); }
+.notif-tag.otair   { color:#00D4FF; background:rgba(0,212,255,.12); }
+.notif-tag.booking { color:#FFD166; background:rgba(255,209,102,.12); }
+.notif-time { font-size:10px; color:var(--text3); margin-left:auto; white-space:nowrap; }
+.notif-status-dot {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:4px;
+}
+.notif-status-dot.urgent  { background:#FF4D8D; box-shadow:0 0 6px #FF4D8D; animation:livePulse 1.5s infinite; }
+.notif-status-dot.pending { background:#FFD166; }
+.notif-status-dot.done    { background:#06D6A0; }
+
+@media(max-width:768px){
   .bottom-nav {
     display:block;
-    /* safe area for notch phones */
     height: calc(68px + env(safe-area-inset-bottom,0px));
     padding-bottom: env(safe-area-inset-bottom,0px);
   }
@@ -1170,7 +1313,7 @@ body.light-mode .bottom-nav {
 
 /* Floating trigger button */
 .ai-fab {
-  position:fixed; bottom:90px; right:18px; z-index:600;
+  position:fixed; bottom:calc(78px + env(safe-area-inset-bottom,0px)); right:18px; z-index:600;
   width:52px; height:52px; border-radius:50%;
   background:linear-gradient(145deg,#4F7EFF,#9B59FF);
   border:none; cursor:pointer; color:#fff;
@@ -1412,26 +1555,32 @@ body.light-mode .bottom-nav {
   <!-- Dashboard sub-panel nav -->
   <div class="bottom-nav-inner" id="bnav-dash-sub" style="display:none">
     <button class="bnav-item" onclick="bnavSwitch('main')" style="max-width:56px">
-      <div class="bnav-ico">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </div>
+      <div class="bnav-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></div>
       <span class="bnav-label">หน้าหลัก</span>
     </button>
     <button class="bnav-dash-sub-item active" data-panel="overview" onclick="bnavDashPanel('overview',this)">
-      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
-      <span class="bnav-label">ภาพรวม</span>
+      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+      <span class="bnav-label">แจ้งเตือน</span>
     </button>
     <button class="bnav-dash-sub-item" data-panel="cmpmsr" onclick="bnavDashPanel('cmpmsr',this)">
       <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
       <span class="bnav-label">Service</span>
     </button>
-    <button class="bnav-dash-sub-item" data-panel="announce" onclick="bnavDashPanel('announce',this)">
-      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
-      <span class="bnav-label">ประกาศ</span>
+    <button class="bnav-dash-sub-item" data-panel="cm" onclick="bnavDashPanel('cm',this)">
+      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div>
+      <span class="bnav-label">CM</span>
     </button>
-    <button class="bnav-dash-sub-item" data-panel="project" onclick="bnavDashPanel('project',this)">
-      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
-      <span class="bnav-label">โครงการ</span>
+    <button class="bnav-dash-sub-item" data-panel="pm" onclick="bnavDashPanel('pm',this)">
+      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <span class="bnav-label">PM</span>
+    </button>
+    <button class="bnav-dash-sub-item" data-panel="sr" onclick="bnavDashPanel('sr',this)">
+      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <span class="bnav-label">SR</span>
+    </button>
+    <button class="bnav-dash-sub-item" data-panel="misc" onclick="bnavDashPanel('misc',this)">
+      <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <span class="bnav-label">การจอง</span>
     </button>
     <button class="bnav-dash-sub-item" data-panel="otair" onclick="bnavDashPanel('otair',this)">
       <div class="bnav-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
@@ -1555,25 +1704,36 @@ body.light-mode .bottom-nav {
     <div class="dash-topbar">
       <span class="dash-topbar-title">📊 Dashboard <span>GNR3</span></span>
       <button class="dash-nav-item active" data-panel="overview" onclick="switchDashPanel('overview',this)">
-        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
-        <span class="dni-label">ภาพรวม</span>
+        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+        <span class="dni-label">Notification</span>
       </button>
       <button class="dash-nav-item" data-panel="cmpmsr" onclick="switchDashPanel('cmpmsr',this)">
         <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
         <span class="dni-label">Service</span>
       </button>
-
+      <button class="dash-nav-item" data-panel="cm" onclick="switchDashPanel('cm',this)">
+        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div>
+        <span class="dni-label">CM</span>
+      </button>
+      <button class="dash-nav-item" data-panel="pm" onclick="switchDashPanel('pm',this)">
+        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <span class="dni-label">PM</span>
+      </button>
+      <button class="dash-nav-item" data-panel="sr" onclick="switchDashPanel('sr',this)">
+        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+        <span class="dni-label">SR</span>
+      </button>
       <button class="dash-nav-item" data-panel="project" onclick="switchDashPanel('project',this)">
         <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
         <span class="dni-label">Project</span>
       </button>
       <button class="dash-nav-item" data-panel="announce" onclick="switchDashPanel('announce',this)">
-        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
         <span class="dni-label">ประกาศสื่อสาร</span>
       </button>
       <button class="dash-nav-item" data-panel="misc" onclick="switchDashPanel('misc',this)">
-        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
-        <span class="dni-label">รายการอื่นๆ</span>
+        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <span class="dni-label">สรุปการจอง</span>
       </button>
       <button class="dash-nav-item" data-panel="otair" onclick="switchDashPanel('otair',this)">
         <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
@@ -1591,52 +1751,109 @@ body.light-mode .bottom-nav {
     <!-- CONTENT PANELS -->
     <div class="dash-content">
 
-      <!-- ภาพรวม -->
+      <!-- ระบบแจ้งเตือน Notification System -->
       <div class="dash-panel-view active" id="panel-overview">
         <div class="dp-header">
           <div class="dp-header-left">
-            <div class="dp-panel-title">ภาพรวม</div>
-            <div class="dp-panel-sub">GNR3 Building Management — สรุปข้อมูลทั้งระบบ</div>
+            <div class="dp-panel-title">🔔 ระบบแจ้งเตือน</div>
+            <div class="dp-panel-sub">Notification System — การแจ้งเตือนจากกลุ่มงานต่างๆ</div>
           </div>
           <div class="dp-header-right">
-            <button class="dp-speak-btn" id="speak-btn-overview" onclick="dashSpeak('overview')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
-              อ่านสรุป
-            </button>
+            <button class="dp-sheet-btn disconnected" id="btn-sheet-overview" onclick="openSheetConfig('overview')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Sheets</button>
+            <button class="dp-refresh-btn" onclick="renderOverview()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>รีเฟรช</button>
           </div>
         </div>
         <div class="dp-body">
-          <!-- KPI overview row -->
-          <div class="dp-kpi-row" style="grid-template-columns:repeat(4,1fr)">
-            <div class="dp-kpi-card" style="--kbord:#4F7EFF;--kglow:rgba(79,126,255,.12);--kc:#4F7EFF"><div class="dp-kpi-label">Service ทั้งหมด</div><div class="dp-kpi-val" id="ov-service">—</div><div class="dp-kpi-sub">CM / PM / SR</div></div>
-            <div class="dp-kpi-card" style="--kbord:#06D6A0;--kglow:rgba(6,214,160,.12);--kc:#06D6A0"><div class="dp-kpi-label">เสร็จแล้ว</div><div class="dp-kpi-val" id="ov-done">—</div><div class="dp-kpi-sub">Completed</div></div>
-            <div class="dp-kpi-card" style="--kbord:#FFD166;--kglow:rgba(255,209,102,.12);--kc:#FFD166"><div class="dp-kpi-label">โครงการ</div><div class="dp-kpi-val" id="ov-project">—</div><div class="dp-kpi-sub">Active Projects</div></div>
-            <div class="dp-kpi-card" style="--kbord:#FF4D8D;--kglow:rgba(255,77,141,.12);--kc:#FF4D8D"><div class="dp-kpi-label">OT AIR รออนุมัติ</div><div class="dp-kpi-val" id="ov-ot">—</div><div class="dp-kpi-sub">Pending</div></div>
+          <!-- KPI row - svc-kpi-card style -->
+          <div class="svc-kpi-grid">
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#FF4D8D 0%,#FF5569 100%)">
+                <div class="sk-deco1"></div><div class="sk-deco2"></div>
+                <div class="svc-kpi-num" id="notif-urgent">0</div>
+                <span class="svc-kpi-tag">เร่งด่วน</span>
+                <div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+              </div>
+              <div class="svc-kpi-body">
+                <div class="svc-kpi-name">แจ้งเตือนเร่งด่วน</div>
+                <div class="svc-kpi-desc">Urgent — ต้องดำเนินการทันที</div>
+                <div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="notif-bar-urgent" style="width:0%;background:linear-gradient(90deg,#FF4D8D,#FF5569)"></div></div><div class="svc-kpi-bar-label" id="notif-lbl-urgent">0 รายการ</div></div>
+              </div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#FFD166 0%,#FF8C42 100%)">
+                <div class="sk-deco1"></div><div class="sk-deco2"></div>
+                <div class="svc-kpi-num" id="notif-pending">0</div>
+                <span class="svc-kpi-tag">รอดำเนินการ</span>
+                <div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+              </div>
+              <div class="svc-kpi-body">
+                <div class="svc-kpi-name">รอดำเนินการ</div>
+                <div class="svc-kpi-desc">Pending — ยังไม่ได้รับการตอบสนอง</div>
+                <div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="notif-bar-pending" style="width:0%;background:linear-gradient(90deg,#FFD166,#FF8C42)"></div></div><div class="svc-kpi-bar-label" id="notif-lbl-pending">0 รายการ</div></div>
+              </div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#06D6A0 0%,#00B4CC 100%)">
+                <div class="sk-deco1"></div><div class="sk-deco2"></div>
+                <div class="svc-kpi-num" id="notif-done">0</div>
+                <span class="svc-kpi-tag">เสร็จแล้ว</span>
+                <div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+              </div>
+              <div class="svc-kpi-body">
+                <div class="svc-kpi-name">ดำเนินการแล้ว</div>
+                <div class="svc-kpi-desc">Resolved — ตอบสนองแล้ว</div>
+                <div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="notif-bar-done" style="width:100%;background:linear-gradient(90deg,#06D6A0,#00B4CC)"></div></div><div class="svc-kpi-bar-label" id="notif-lbl-done">0 รายการ</div></div>
+              </div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#4F7EFF 0%,#9B59FF 100%)">
+                <div class="sk-deco1"></div><div class="sk-deco2"></div>
+                <div class="svc-kpi-num" id="notif-total">0</div>
+                <span class="svc-kpi-tag">รวม</span>
+                <div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+              </div>
+              <div class="svc-kpi-body">
+                <div class="svc-kpi-name">แจ้งเตือนทั้งหมด</div>
+                <div class="svc-kpi-desc">All Notifications — เดือนนี้</div>
+                <div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="notif-bar-total" style="width:0%;background:linear-gradient(90deg,#4F7EFF,#9B59FF)"></div></div><div class="svc-kpi-bar-label" id="notif-lbl-total">0 รายการ</div></div>
+              </div>
+            </div>
           </div>
-          <!-- chart row -->
+
+          <!-- Notification feed -->
           <div class="dp-chart-row">
-            <div class="dp-chart-card">
-              <div class="dp-chart-title">Service รายเดือน</div>
-              <div class="dp-chart-sub">CM / PM / SR 6 เดือนล่าสุด</div>
-              <div class="dp-chart-wrap"><canvas id="chart-overview-monthly"></canvas></div>
+            <div class="dp-chart-card" style="flex:2">
+              <div class="dp-chart-header">
+                <div class="dp-chart-header-left">
+                  <div class="dp-chart-title">📋 รายการแจ้งเตือนล่าสุด</div>
+                  <div class="dp-chart-sub">แสดงการแจ้งเตือนจากกลุ่มงานทั้งหมด</div>
+                </div>
+                <div class="dp-chart-controls">
+                  <select class="dp-month-select" id="notif-filter-group" onchange="renderNotifFeed()">
+                    <option value="all">ทุกกลุ่มงาน</option>
+                    <option value="cm">CM</option>
+                    <option value="pm">PM</option>
+                    <option value="sr">SR</option>
+                    <option value="project">Project</option>
+                    <option value="otair">OT AIR</option>
+                    <option value="booking">การจอง</option>
+                  </select>
+                  <select class="dp-month-select" id="notif-filter-status" onchange="renderNotifFeed()">
+                    <option value="all">ทุกสถานะ</option>
+                    <option value="urgent">เร่งด่วน</option>
+                    <option value="pending">รอดำเนินการ</option>
+                    <option value="done">เสร็จแล้ว</option>
+                  </select>
+                </div>
+              </div>
+              <div id="notif-feed-list" style="display:flex;flex-direction:column;gap:8px;margin-top:.8rem;min-height:200px"></div>
             </div>
-            <div class="dp-chart-card">
-              <div class="dp-chart-title">สัดส่วน Service</div>
-              <div class="dp-chart-sub">CM / PM / SR</div>
-              <div class="dp-chart-wrap"><canvas id="chart-overview-donut"></canvas></div>
-            </div>
-          </div>
-          <!-- second row -->
-          <div class="dp-chart-row">
-            <div class="dp-chart-card">
-              <div class="dp-chart-title">ความคืบหน้าโครงการ</div>
-              <div class="dp-chart-sub">% Complete แต่ละอาคาร</div>
-              <div class="dp-chart-wrap short" id="ov-progress-list"></div>
-            </div>
-            <div class="dp-chart-card">
-              <div class="dp-chart-title">OT AIR รายเดือน</div>
-              <div class="dp-chart-sub">จำนวนคำขอแต่ละอาคาร</div>
-              <div class="dp-chart-wrap short"><canvas id="chart-overview-ot"></canvas></div>
+            <div class="dp-chart-card" style="flex:1;min-width:0">
+              <div class="dp-chart-title">สัดส่วนตามกลุ่มงาน</div>
+              <div class="dp-chart-sub">แจ้งเตือนเดือนนี้</div>
+              <div class="dp-chart-wrap" style="height:200px"><canvas id="chart-notif-donut"></canvas></div>
+              <div class="dp-chart-title" style="margin-top:1rem">แนวโน้มรายเดือน</div>
+              <div class="dp-chart-wrap" style="height:140px"><canvas id="chart-notif-trend"></canvas></div>
             </div>
           </div>
         </div>
@@ -1855,6 +2072,145 @@ body.light-mode .bottom-nav {
         </div>
       </div>
 
+      <!-- ประกาศสื่อสาร (OT AIR icon updated above) -->
+      <!-- CM Corrective Maintenance -->
+      <div class="dash-panel-view" id="panel-cm">
+        <div class="dp-header">
+          <div class="dp-header-left">
+            <div class="dp-panel-title">CM — Corrective Maintenance</div>
+            <div class="dp-panel-sub">งานซ่อมบำรุงเชิงแก้ไข — แก้ไขความเสียหายที่เกิดขึ้น</div>
+          </div>
+          <div class="dp-header-right">
+            <button class="dp-speak-btn" id="speak-btn-cm" onclick="dashSpeak('cm')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>อ่านสรุป</button>
+            <button class="dp-sheet-btn disconnected" id="btn-sheet-cm" onclick="openSheetConfig('cm')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Sheets</button>
+            <button class="dp-refresh-btn" onclick="loadPanelData('cm')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>รีเฟรช</button>
+          </div>
+        </div>
+        <div class="dp-building-tabs">
+          <button class="dp-bld-tab active" onclick="switchBldTab('cm','all',this)">ทั้งหมด</button>
+          <button class="dp-bld-tab" onclick="switchBldTab('cm','arihills',this)">Ari Hills</button>
+          <button class="dp-bld-tab" onclick="switchBldTab('cm','ksl',this)">KSL</button>
+          <button class="dp-bld-tab" onclick="switchBldTab('cm','esv',this)">ESV</button>
+        </div>
+        <div class="dp-body">
+          <div class="svc-kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#FF8C42,#FF5569)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-cm-total">—</div><span class="svc-kpi-tag">รวม</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">งาน CM ทั้งหมด</div><div class="svc-kpi-desc">Corrective Maintenance</div><div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-cm-total" style="width:0%;background:linear-gradient(90deg,#FF8C42,#FF5569)"></div></div><div class="svc-kpi-bar-label" id="bar-lbl-cm-total">0 รายการ</div></div></div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#FF5569,#FF4D8D)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-cm-open">—</div><span class="svc-kpi-tag">รอดำเนินการ</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">รอดำเนินการ</div><div class="svc-kpi-desc">Open / Pending</div><div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-cm-open" style="width:0%;background:linear-gradient(90deg,#FF5569,#FF4D8D)"></div></div><div class="svc-kpi-bar-label" id="bar-lbl-cm-open">0 รายการ</div></div></div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#06D6A0,#00B4CC)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-cm-done">—</div><span class="svc-kpi-tag">เสร็จแล้ว</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">เสร็จสิ้นแล้ว</div><div class="svc-kpi-desc">Completed</div><div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-cm-done" style="width:0%;background:linear-gradient(90deg,#06D6A0,#00B4CC)"></div></div><div class="svc-kpi-bar-label" id="bar-lbl-cm-done">0% เสร็จสิ้น</div></div></div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#FFD166,#FF8C42)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-cm-month">—</div><span class="svc-kpi-tag">เดือนนี้</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">เดือนนี้</div><div class="svc-kpi-desc">งาน CM ที่เปิดเดือนนี้</div><div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-cm-month" style="width:0%;background:linear-gradient(90deg,#FFD166,#FF8C42)"></div></div><div class="svc-kpi-bar-label" id="bar-lbl-cm-month">0 รายการใหม่</div></div></div>
+            </div>
+          </div>
+          <div class="dp-chart-row">
+            <div class="dp-chart-card"><div class="dp-chart-header"><div class="dp-chart-header-left"><div class="dp-chart-title">CM รายเดือน</div><div class="dp-chart-sub">จำนวนงาน CM แต่ละเดือน</div></div></div><div class="dp-chart-wrap tall"><canvas id="chart-cm-monthly"></canvas></div></div>
+            <div class="dp-chart-card"><div class="dp-chart-title">สัดส่วนตามอาคาร</div><div class="dp-chart-sub">CM แต่ละอาคาร</div><div class="dp-chart-wrap tall"><canvas id="chart-cm-bld"></canvas></div></div>
+          </div>
+          <div class="dp-table-card"><div class="dp-table-head"><div class="dp-table-title">รายการงาน CM</div></div><div style="overflow-x:auto"><table class="dp-table"><thead><tr><th>เลขที่</th><th>รายการ</th><th>อาคาร</th><th>วันที่</th><th>ผู้รับผิดชอบ</th><th>สถานะ</th></tr></thead><tbody id="tbody-cm"><tr><td colspan="6"><div class="dp-empty"><div class="dp-empty-ico">🔧</div><div>ยังไม่ได้เชื่อมต่อ Google Sheets</div></div></td></tr></tbody></table></div></div>
+        </div>
+      </div>
+
+      <!-- PM Preventive Maintenance -->
+      <div class="dash-panel-view" id="panel-pm">
+        <div class="dp-header">
+          <div class="dp-header-left">
+            <div class="dp-panel-title">PM — Preventive Maintenance</div>
+            <div class="dp-panel-sub">งานซ่อมบำรุงเชิงป้องกัน — ตรวจสอบและบำรุงรักษาตามกำหนด</div>
+          </div>
+          <div class="dp-header-right">
+            <button class="dp-speak-btn" id="speak-btn-pm" onclick="dashSpeak('pm')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>อ่านสรุป</button>
+            <button class="dp-sheet-btn disconnected" id="btn-sheet-pm" onclick="openSheetConfig('pm')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Sheets</button>
+            <button class="dp-refresh-btn" onclick="loadPanelData('pm')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>รีเฟรช</button>
+          </div>
+        </div>
+        <div class="dp-building-tabs">
+          <button class="dp-bld-tab active" onclick="switchBldTab('pm','all',this)">ทั้งหมด</button>
+          <button class="dp-bld-tab" onclick="switchBldTab('pm','arihills',this)">Ari Hills</button>
+          <button class="dp-bld-tab" onclick="switchBldTab('pm','ksl',this)">KSL</button>
+          <button class="dp-bld-tab" onclick="switchBldTab('pm','esv',this)">ESV</button>
+        </div>
+        <div class="dp-body">
+          <div class="svc-kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#4F7EFF,#00D4FF)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-pm-total">—</div><span class="svc-kpi-tag">รวม</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">งาน PM ทั้งหมด</div><div class="svc-kpi-desc">Preventive Maintenance</div><div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-pm-total" style="width:0%;background:linear-gradient(90deg,#4F7EFF,#00D4FF)"></div></div><div class="svc-kpi-bar-label" id="bar-lbl-pm-total">0 รายการ</div></div></div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#00D4FF,#06D6A0)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-pm-scheduled">—</div><span class="svc-kpi-tag">กำหนดการ</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">กำหนดการ</div><div class="svc-kpi-desc">Scheduled — รออนุมัติ</div><div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-pm-scheduled" style="width:0%;background:linear-gradient(90deg,#00D4FF,#06D6A0)"></div></div><div class="svc-kpi-bar-label" id="bar-lbl-pm-scheduled">0 รายการ</div></div></div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#06D6A0,#00B4CC)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-pm-done">—</div><span class="svc-kpi-tag">เสร็จแล้ว</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">เสร็จสิ้นแล้ว</div><div class="svc-kpi-desc">Completed</div><div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-pm-done" style="width:0%;background:linear-gradient(90deg,#06D6A0,#00B4CC)"></div></div><div class="svc-kpi-bar-label" id="bar-lbl-pm-done">0% เสร็จสิ้น</div></div></div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#9B59FF,#4F7EFF)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-pm-overdue">—</div><span class="svc-kpi-tag">เกินกำหนด</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">เกินกำหนด</div><div class="svc-kpi-desc">Overdue — ต้องเร่งดำเนินการ</div><div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-pm-overdue" style="width:0%;background:linear-gradient(90deg,#9B59FF,#4F7EFF)"></div></div><div class="svc-kpi-bar-label" id="bar-lbl-pm-overdue">0 รายการ</div></div></div>
+            </div>
+          </div>
+          <div class="dp-chart-row">
+            <div class="dp-chart-card"><div class="dp-chart-header"><div class="dp-chart-header-left"><div class="dp-chart-title">PM รายเดือน</div><div class="dp-chart-sub">จำนวนงาน PM แต่ละเดือน</div></div></div><div class="dp-chart-wrap tall"><canvas id="chart-pm-monthly"></canvas></div></div>
+            <div class="dp-chart-card"><div class="dp-chart-title">สัดส่วนตามอาคาร</div><div class="dp-chart-sub">PM แต่ละอาคาร</div><div class="dp-chart-wrap tall"><canvas id="chart-pm-bld"></canvas></div></div>
+          </div>
+          <div class="dp-table-card"><div class="dp-table-head"><div class="dp-table-title">รายการงาน PM</div></div><div style="overflow-x:auto"><table class="dp-table"><thead><tr><th>เลขที่</th><th>รายการ</th><th>อาคาร</th><th>กำหนดการ</th><th>ผู้รับผิดชอบ</th><th>สถานะ</th></tr></thead><tbody id="tbody-pm"><tr><td colspan="6"><div class="dp-empty"><div class="dp-empty-ico">🛡️</div><div>ยังไม่ได้เชื่อมต่อ Google Sheets</div></div></td></tr></tbody></table></div></div>
+        </div>
+      </div>
+
+      <!-- SR Service Request -->
+      <div class="dash-panel-view" id="panel-sr">
+        <div class="dp-header">
+          <div class="dp-header-left">
+            <div class="dp-panel-title">SR — Service Request</div>
+            <div class="dp-panel-sub">คำขอรับบริการ — งานที่ผู้ใช้งานแจ้งขอรับการสนับสนุน</div>
+          </div>
+          <div class="dp-header-right">
+            <button class="dp-speak-btn" id="speak-btn-sr" onclick="dashSpeak('sr')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>อ่านสรุป</button>
+            <button class="dp-sheet-btn disconnected" id="btn-sheet-sr" onclick="openSheetConfig('sr')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Sheets</button>
+            <button class="dp-refresh-btn" onclick="loadPanelData('sr')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>รีเฟรช</button>
+          </div>
+        </div>
+        <div class="dp-building-tabs">
+          <button class="dp-bld-tab active" onclick="switchBldTab('sr','all',this)">ทั้งหมด</button>
+          <button class="dp-bld-tab" onclick="switchBldTab('sr','arihills',this)">Ari Hills</button>
+          <button class="dp-bld-tab" onclick="switchBldTab('sr','ksl',this)">KSL</button>
+          <button class="dp-bld-tab" onclick="switchBldTab('sr','esv',this)">ESV</button>
+        </div>
+        <div class="dp-body">
+          <div class="svc-kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#9B59FF,#FF4D8D)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-sr-total">—</div><span class="svc-kpi-tag">รวม</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">คำขอทั้งหมด</div><div class="svc-kpi-desc">Service Request</div><div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-sr-total" style="width:0%;background:linear-gradient(90deg,#9B59FF,#FF4D8D)"></div></div><div class="svc-kpi-bar-label" id="bar-lbl-sr-total">0 รายการ</div></div></div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#FFD166,#FF8C42)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-sr-open">—</div><span class="svc-kpi-tag">รอดำเนินการ</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">รอดำเนินการ</div><div class="svc-kpi-desc">Open / Pending</div><div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-sr-open" style="width:0%;background:linear-gradient(90deg,#FFD166,#FF8C42)"></div></div><div class="svc-kpi-bar-label" id="bar-lbl-sr-open">0 รายการ</div></div></div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#06D6A0,#00B4CC)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-sr-done">—</div><span class="svc-kpi-tag">เสร็จแล้ว</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">เสร็จสิ้นแล้ว</div><div class="svc-kpi-desc">Completed</div><div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-sr-done" style="width:0%;background:linear-gradient(90deg,#06D6A0,#00B4CC)"></div></div><div class="svc-kpi-bar-label" id="bar-lbl-sr-done">0% เสร็จสิ้น</div></div></div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#FF4D8D,#9B59FF)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-sr-month">—</div><span class="svc-kpi-tag">เดือนนี้</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">เดือนนี้</div><div class="svc-kpi-desc">คำขอใหม่เดือนนี้</div><div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="bar-sr-month" style="width:0%;background:linear-gradient(90deg,#FF4D8D,#9B59FF)"></div></div><div class="svc-kpi-bar-label" id="bar-lbl-sr-month">0 รายการใหม่</div></div></div>
+            </div>
+          </div>
+          <div class="dp-chart-row">
+            <div class="dp-chart-card"><div class="dp-chart-header"><div class="dp-chart-header-left"><div class="dp-chart-title">SR รายเดือน</div><div class="dp-chart-sub">จำนวนคำขอแต่ละเดือน</div></div></div><div class="dp-chart-wrap tall"><canvas id="chart-sr-monthly"></canvas></div></div>
+            <div class="dp-chart-card"><div class="dp-chart-title">สัดส่วนตามอาคาร</div><div class="dp-chart-sub">SR แต่ละอาคาร</div><div class="dp-chart-wrap tall"><canvas id="chart-sr-bld"></canvas></div></div>
+          </div>
+          <div class="dp-table-card"><div class="dp-table-head"><div class="dp-table-title">รายการคำขอ SR</div></div><div style="overflow-x:auto"><table class="dp-table"><thead><tr><th>เลขที่</th><th>รายการ</th><th>อาคาร</th><th>วันที่แจ้ง</th><th>ผู้แจ้ง</th><th>สถานะ</th></tr></thead><tbody id="tbody-sr"><tr><td colspan="6"><div class="dp-empty"><div class="dp-empty-ico">💬</div><div>ยังไม่ได้เชื่อมต่อ Google Sheets</div></div></td></tr></tbody></table></div></div>
+        </div>
+      </div>
+
       <!-- ประกาศสื่อสาร -->
       <div class="dash-panel-view" id="panel-announce">
         <div class="dp-header">
@@ -1916,49 +2272,75 @@ body.light-mode .bottom-nav {
       </div>
 
 
-      <!-- รายการอื่นๆ -->
+      <!-- สรุปการจอง — Calendar -->
       <div class="dash-panel-view" id="panel-misc">
         <div class="dp-header">
           <div class="dp-header-left">
-            <div class="dp-panel-title">รายการอื่นๆ</div>
-            <div class="dp-panel-sub">Miscellaneous — รายงานและข้อมูลเพิ่มเติมของระบบ</div>
+            <div class="dp-panel-title">📅 สรุปการจอง</div>
+            <div class="dp-panel-sub">Booking Calendar — ปฏิทินสรุปการจองพื้นที่และบริการต่างๆ</div>
           </div>
           <div class="dp-header-right">
-            <button class="dp-sheet-btn disconnected" id="btn-sheet-misc" onclick="openSheetConfig('misc')">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              เชื่อมต่อ Sheets
-            </button>
-            <button class="dp-refresh-btn" onclick="loadPanelData('misc')">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-              รีเฟรช
-            </button>
+            <button class="dp-sheet-btn disconnected" id="btn-sheet-misc" onclick="openSheetConfig('misc')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Sheets</button>
+            <button class="dp-refresh-btn" onclick="initBookingCalendar()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>รีเฟรช</button>
           </div>
         </div>
         <div class="dp-body">
-          <div class="dp-kpi-row">
-            <div class="dp-kpi-card" style="--kbord:#4F7EFF;--kglow:rgba(79,126,255,.12);--kc:#4F7EFF"><div class="dp-kpi-label">รายการทั้งหมด</div><div class="dp-kpi-val" id="kv-misc-total">—</div><div class="dp-kpi-sub">รายการ</div></div>
-            <div class="dp-kpi-card" style="--kbord:#06D6A0;--kglow:rgba(6,214,160,.12);--kc:#06D6A0"><div class="dp-kpi-label">เดือนนี้</div><div class="dp-kpi-val" id="kv-misc-month">—</div><div class="dp-kpi-sub">รายการใหม่</div></div>
-            <div class="dp-kpi-card" style="--kbord:#FFD166;--kglow:rgba(255,209,102,.12);--kc:#FFD166"><div class="dp-kpi-label">หมวดหมู่</div><div class="dp-kpi-val" id="kv-misc-cat">—</div><div class="dp-kpi-sub">ประเภท</div></div>
-            <div class="dp-kpi-card" style="--kbord:#9B59FF;--kglow:rgba(155,89,255,.12);--kc:#9B59FF"><div class="dp-kpi-label">รอดำเนินการ</div><div class="dp-kpi-val" id="kv-misc-pending">—</div><div class="dp-kpi-sub">รายการ</div></div>
-          </div>
-          <div class="dp-chart-row">
-            <div class="dp-chart-card">
-              <div class="dp-chart-title">รายการรายเดือน</div>
-              <div class="dp-chart-sub">6 เดือนล่าสุด</div>
-              <div class="dp-chart-wrap"><canvas id="chart-misc-monthly"></canvas></div>
+          <!-- KPI svc-card style -->
+          <div class="svc-kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#4F7EFF,#7B5CFF)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-bk-total">0</div><span class="svc-kpi-tag">รวม</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">การจองทั้งหมด</div><div class="svc-kpi-desc">เดือนนี้</div></div>
             </div>
-            <div class="dp-chart-card">
-              <div class="dp-chart-title">สัดส่วนตามหมวดหมู่</div>
-              <div class="dp-chart-sub">เดือนปัจจุบัน</div>
-              <div class="dp-chart-wrap"><canvas id="chart-misc-cat"></canvas></div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#06D6A0,#00B4CC)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-bk-approved">0</div><span class="svc-kpi-tag">อนุมัติ</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">อนุมัติแล้ว</div><div class="svc-kpi-desc">Approved</div></div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#FFD166,#FF8C42)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-bk-pending">0</div><span class="svc-kpi-tag">รอ</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">รอการอนุมัติ</div><div class="svc-kpi-desc">Pending</div></div>
+            </div>
+            <div class="svc-kpi-card">
+              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#FF4D8D,#FF5569)"><div class="sk-deco1"></div><div class="sk-deco2"></div><div class="svc-kpi-num" id="kv-bk-cancel">0</div><span class="svc-kpi-tag">ยกเลิก</span><div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div></div>
+              <div class="svc-kpi-body"><div class="svc-kpi-name">ยกเลิกแล้ว</div><div class="svc-kpi-desc">Cancelled</div></div>
             </div>
           </div>
-          <div class="dp-table-card">
-            <div class="dp-table-head"><div class="dp-table-title">รายการทั้งหมด</div></div>
-            <div style="overflow-x:auto"><table class="dp-table">
-              <thead><tr><th>วันที่</th><th>รายการ</th><th>หมวดหมู่</th><th>รายละเอียด</th><th>สถานะ</th></tr></thead>
-              <tbody id="tbody-misc"><tr><td colspan="5"><div class="dp-empty"><div class="dp-empty-ico">📋</div><div>ยังไม่ได้เชื่อมต่อ Google Sheets</div></div></td></tr></tbody>
-            </table></div>
+
+          <!-- Calendar Legend + nav -->
+          <div class="dp-chart-card" style="margin-bottom:1.4rem">
+            <div class="dp-chart-header" style="margin-bottom:.8rem">
+              <div class="dp-chart-header-left">
+                <div class="dp-chart-title" id="cal-month-label">— ปฏิทินการจอง —</div>
+                <div class="dp-chart-sub">คลิกที่วันเพื่อดูรายละเอียดการจอง</div>
+              </div>
+              <div class="dp-chart-controls">
+                <button class="dp-month-select" style="padding:5px 12px;cursor:pointer" onclick="calNav(-1)">‹ ก่อนหน้า</button>
+                <button class="dp-month-select" style="padding:5px 12px;cursor:pointer;background:rgba(79,126,255,.15);color:var(--blue);border-color:rgba(79,126,255,.35)" onclick="calNav(0)">วันนี้</button>
+                <button class="dp-month-select" style="padding:5px 12px;cursor:pointer" onclick="calNav(1)">ถัดไป ›</button>
+              </div>
+            </div>
+            <!-- Color legend -->
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem">
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-family:Kanit;font-weight:600"><div style="width:10px;height:10px;border-radius:3px;background:#4F7EFF"></div>Parking</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-family:Kanit;font-weight:600"><div style="width:10px;height:10px;border-radius:3px;background:#06D6A0"></div>Library</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-family:Kanit;font-weight:600"><div style="width:10px;height:10px;border-radius:3px;background:#FF8C42"></div>Playground</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-family:Kanit;font-weight:600"><div style="width:10px;height:10px;border-radius:3px;background:#9B59FF"></div>ห้องประชุม</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-family:Kanit;font-weight:600"><div style="width:10px;height:10px;border-radius:3px;background:#FFD166"></div>รออนุมัติ</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);font-family:Kanit;font-weight:600"><div style="width:10px;height:10px;border-radius:3px;background:#FF4D8D"></div>ยกเลิก</div>
+            </div>
+            <!-- Calendar grid -->
+            <div id="booking-calendar" style="width:100%"></div>
+          </div>
+
+          <!-- Booking detail modal (inline) -->
+          <div id="cal-detail-panel" style="display:none" class="dp-chart-card">
+            <div class="dp-chart-header">
+              <div class="dp-chart-header-left">
+                <div class="dp-chart-title" id="cal-detail-date">รายละเอียดวันที่</div>
+                <div class="dp-chart-sub">รายการจองทั้งหมดในวันนี้</div>
+              </div>
+              <button class="dp-refresh-btn" onclick="document.getElementById('cal-detail-panel').style.display='none'">✕ ปิด</button>
+            </div>
+            <div id="cal-detail-list" style="display:flex;flex-direction:column;gap:8px;margin-top:.8rem"></div>
           </div>
         </div>
       </div>
@@ -2282,8 +2664,8 @@ function switchTab(tab){
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
   ['view-dash','view-main','view-sub','view-admin'].forEach(id=>document.getElementById(id).classList.remove('active'));
   document.querySelector('.topbar').classList.remove('hidden');
-  if(tab==='dashboard'){const vd=document.getElementById('view-dash');void vd.offsetWidth;renderDashboard();vd.classList.add('active');history.replaceState('',document.title,window.location.pathname);}
-  else if(tab==='admin'){renderAdminPanel();document.getElementById('view-admin').classList.add('active');history.replaceState('',document.title,window.location.pathname);}
+  if(tab==='dashboard'){const vd=document.getElementById('view-dash');void vd.offsetWidth;renderDashboard();vd.classList.add('active');try{history.replaceState('',document.title,window.location.pathname);}catch(e){}}
+  else if(tab==='admin'){renderAdminPanel();document.getElementById('view-admin').classList.add('active');try{history.replaceState('',document.title,window.location.pathname);}catch(e){}}
   else route();
 }
 
@@ -2292,6 +2674,8 @@ function switchTab(tab){
 ══════════════════════════════════════ */
 const SHEET_STORAGE_KEY = 'gnr3_sheets_v2';
 const CHART_DEFAULTS = {
+  responsive:true,
+  maintainAspectRatio:false,
   plugins:{legend:{labels:{color:'#8B93C4',font:{family:'Kanit',size:11}}}},
   scales:{x:{ticks:{color:'#4A5180',font:{family:'Kanit',size:10}},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#4A5180',font:{family:'Kanit',size:10}},grid:{color:'rgba(255,255,255,0.05)'}}}
 };
@@ -2312,7 +2696,9 @@ function renderDashboard(){
   const ovBtn = document.querySelector('.dash-nav-item[data-panel="overview"]');
   switchDashPanel('overview', ovBtn);
   loadServiceImages();
-  setTimeout(()=>{ initAllCharts(); }, 100);
+  // Delay chart init longer on mobile to ensure DOM is laid out
+  const delay = window.innerWidth <= 768 ? 250 : 100;
+  setTimeout(()=>{ initAllCharts(); }, delay);
 }
 
 /* ── Tab switching ── */
@@ -2323,9 +2709,16 @@ function switchDashPanel(panel, btn){
   document.querySelectorAll('.dash-panel-view').forEach(p=>p.classList.remove('active'));
   const pEl = document.getElementById('panel-'+panel);
   if(pEl){ void pEl.offsetWidth; pEl.classList.add('active'); }
-  if(panel==='overview') setTimeout(()=>renderOverview(), 150);
-  else if(panel==='misc') setTimeout(()=>initMiscCharts(), 120);
-  else setTimeout(()=>initAllCharts(), 120);
+  if(panel==='overview') setTimeout(()=>{ renderOverview(); resizeAllCharts(); }, 150);
+  else if(panel==='misc') setTimeout(()=>{ initMiscCharts(); resizeAllCharts(); }, 120);
+  else setTimeout(()=>{ initAllCharts(); resizeAllCharts(); }, 120);
+}
+
+/* ── Force resize all active charts (fixes mobile canvas=0 issue) ── */
+function resizeAllCharts(){
+  Object.values(DASH_CHARTS).forEach(chart=>{
+    try{ chart.resize(); } catch(e){}
+  });
 }
 
 function switchBldTab(panel, bld, btn){
@@ -2942,7 +3335,7 @@ let _tt;
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2800);}
 
 /* ══ ROUTER ══ */
-function navigate(secId){if(secId)location.hash=secId;else{history.pushState('',document.title,window.location.pathname+window.location.search);route();}}
+function navigate(secId){if(secId)location.hash=secId;else{try{history.pushState('',document.title,window.location.pathname+window.location.search);}catch(e){}route();}}
 function route(){
   if(currentTab==='dashboard'||currentTab==='admin')return;
   const hash=location.hash.replace('#','');
@@ -3720,6 +4113,309 @@ function renderServiceImages(){
 
 // Init service images on dashboard load
 
+/* ══════════════════════════════════════════════════════
+   NOTIFICATION SYSTEM — renderOverview replacement
+══════════════════════════════════════════════════════ */
+const DEMO_NOTIFICATIONS = [
+  {id:1,group:'cm',title:'แจ้งซ่อม — ปั๊มน้ำ B2 ขัดข้อง',desc:'อาคาร KSL ชั้น B2 ปั๊มน้ำดับฉุกเฉิน รอช่างดำเนินการ',status:'urgent',time:'10 นาทีที่แล้ว',bld:'KSL'},
+  {id:2,group:'pm',title:'PM รายเดือน — ระบบดับเพลิง Ari Hills',desc:'ครบกำหนดตรวจสอบ Sprinkler & Fire Alarm ประจำเดือน',status:'pending',time:'2 ชั่วโมงที่แล้ว',bld:'Ari Hills'},
+  {id:3,group:'booking',title:'คำขอจองห้องประชุม 12A',desc:'นาย ก. ขอจองห้อง 12A วันที่ 5 เม.ย. 09:00–12:00 น.',status:'pending',time:'3 ชั่วโมงที่แล้ว',bld:'NTL'},
+  {id:4,group:'sr',title:'SR — ไฟดับชั้น 5 อาคาร ESV',desc:'ผู้แจ้ง: แผนก HR รายงานไฟฟ้าดับบางจุด ชั้น 5 ESV',status:'urgent',time:'5 ชั่วโมงที่แล้ว',bld:'ESV'},
+  {id:5,group:'otair',title:'OT AIR — ขอใช้ AC นอกเวลา',desc:'แผนก IT ขอเปิด AC ห้อง Server วันเสาร์–อาทิตย์',status:'pending',time:'เมื่อวาน',bld:'Ari Hills'},
+  {id:6,group:'project',title:'โครงการปรับปรุงลิฟต์ เสร็จแล้ว',desc:'ลิฟต์ตัวที่ 2 อาคาร KSL ปรับปรุงเสร็จสิ้น พร้อมใช้งาน',status:'done',time:'เมื่อวาน',bld:'KSL'},
+  {id:7,group:'cm',title:'CM — แอร์ชั้น 3 ไม่เย็น',desc:'ห้อง 301 รายงานเครื่องปรับอากาศทำงานผิดปกติ',status:'done',time:'2 วันที่แล้ว',bld:'Ari Hills'},
+  {id:8,group:'booking',title:'จองที่จอดรถ — ยืนยันแล้ว',desc:'การจองที่จอดรถ B1 วันที่ 3–4 เม.ย. ได้รับการอนุมัติ',status:'done',time:'2 วันที่แล้ว',bld:'NTL'},
+];
+
+function renderOverview(){
+  const notifs = DEMO_NOTIFICATIONS;
+  const urgent  = notifs.filter(n=>n.status==='urgent').length;
+  const pending = notifs.filter(n=>n.status==='pending').length;
+  const done    = notifs.filter(n=>n.status==='done').length;
+  const total   = notifs.length;
+  setTxt('notif-urgent',urgent); setTxt('notif-pending',pending);
+  setTxt('notif-done',done); setTxt('notif-total',total);
+  const pctU=total?Math.round(urgent/total*100):0;
+  const pctP=total?Math.round(pending/total*100):0;
+  const pctD=total?Math.round(done/total*100):0;
+  const setBarN=(id,pct)=>{const e=document.getElementById(id);if(e)setTimeout(()=>e.style.width=pct+'%',300);};
+  setBarN('notif-bar-urgent',pctU); setBarN('notif-bar-pending',pctP);
+  setBarN('notif-bar-done',pctD); setBarN('notif-bar-total',Math.min(100,total*8));
+  const setLbl=(id,v)=>setTxt(id,v+' รายการ');
+  setLbl('notif-lbl-urgent',urgent); setLbl('notif-lbl-pending',pending);
+  setLbl('notif-lbl-done',done); setLbl('notif-lbl-total',total);
+  renderNotifFeed();
+  // Donut chart
+  destroyChart('notif-donut');
+  const grpCounts={cm:0,pm:0,sr:0,project:0,otair:0,booking:0};
+  notifs.forEach(n=>{if(grpCounts[n.group]!==undefined)grpCounts[n.group]++;});
+  const c1=document.getElementById('chart-notif-donut');
+  if(c1) DASH_CHARTS['notif-donut']=new Chart(c1,{type:'doughnut',data:{labels:['CM','PM','SR','Project','OT AIR','Booking'],datasets:[{data:Object.values(grpCounts),backgroundColor:['rgba(255,140,66,0.85)','rgba(79,126,255,0.85)','rgba(155,89,255,0.85)','rgba(6,214,160,0.85)','rgba(0,212,255,0.85)','rgba(255,209,102,0.85)'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8B93C4',font:{family:'Kanit',size:10}},position:'bottom'}},cutout:'60%'}});
+  // Trend line chart
+  destroyChart('notif-trend');
+  const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'];
+  const c2=document.getElementById('chart-notif-trend');
+  if(c2) DASH_CHARTS['notif-trend']=new Chart(c2,{type:'line',data:{labels:months,datasets:[{label:'แจ้งเตือน',data:[12,18,14,22,16,total],borderColor:'rgba(255,77,141,1)',backgroundColor:'rgba(255,77,141,0.12)',fill:true,tension:.4,pointRadius:3}]},options:{...CHART_DEFAULTS}});
+}
+
+function renderNotifFeed(){
+  const grpFilter=document.getElementById('notif-filter-group')?.value||'all';
+  const stsFilter=document.getElementById('notif-filter-status')?.value||'all';
+  const list=document.getElementById('notif-feed-list');
+  if(!list)return;
+  const filtered=DEMO_NOTIFICATIONS.filter(n=>{
+    if(grpFilter!=='all'&&n.group!==grpFilter)return false;
+    if(stsFilter!=='all'&&n.status!==stsFilter)return false;
+    return true;
+  });
+  const colorMap={cm:'#FF8C42',pm:'#4F7EFF',sr:'#9B59FF',project:'#06D6A0',otair:'#00D4FF',booking:'#FFD166'};
+  const bgMap={cm:'rgba(255,140,66,.12)',pm:'rgba(79,126,255,.12)',sr:'rgba(155,89,255,.12)',project:'rgba(6,214,160,.12)',otair:'rgba(0,212,255,.12)',booking:'rgba(255,209,102,.12)'};
+  const icoMap={
+    cm:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>`,
+    pm:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+    sr:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`,
+    project:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`,
+    otair:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>`,
+    booking:`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  };
+  if(!filtered.length){list.innerHTML='<div class="dp-empty"><div class="dp-empty-ico">🔔</div><div>ไม่มีรายการแจ้งเตือน</div></div>';return;}
+  list.innerHTML=filtered.map(n=>`
+    <div class="notif-feed-item" style="--ncolor:${colorMap[n.group]||'#4F7EFF'};--nbg:${bgMap[n.group]||'rgba(79,126,255,.12)'}">
+      <div class="notif-status-dot ${n.status}"></div>
+      <div class="notif-ico-wrap">${icoMap[n.group]||icoMap.cm}</div>
+      <div class="notif-body">
+        <div class="notif-title">${n.title}</div>
+        <div class="notif-desc">${n.desc}</div>
+        <div class="notif-meta">
+          <span class="notif-tag ${n.group}">${n.group.toUpperCase()}</span>
+          <span class="notif-tag" style="color:var(--text3);background:rgba(255,255,255,.06)">${n.bld}</span>
+          <span class="notif-time">${n.time}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════
+   CM PANEL JS
+══════════════════════════════════════ */
+function renderCMPanel(data){
+  const total=data.length;
+  const open=data.filter(r=>!r['สถานะ']?.includes('เสร็จ')&&r['สถานะ']?.toLowerCase()!=='done').length;
+  const done=total-open;
+  const now=new Date(); const thisMonth=now.getMonth(); const thisYear=now.getFullYear();
+  const month=data.filter(r=>{const d=new Date(r['วันที่']||r['Date']||0);return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;}).length;
+  setTxt('kv-cm-total',total); setTxt('kv-cm-open',open); setTxt('kv-cm-done',done); setTxt('kv-cm-month',month||Math.round(total*.3));
+  const pctD=total?Math.round(done/total*100):0;
+  const sb=(id,pct)=>{const e=document.getElementById(id);if(e)setTimeout(()=>e.style.width=pct+'%',300);};
+  sb('bar-cm-total',Math.min(100,total*4)); sb('bar-cm-open',total?Math.round(open/total*100):0);
+  sb('bar-cm-done',pctD); sb('bar-cm-month',50);
+  setTxt('bar-lbl-cm-total',total+' รายการ'); setTxt('bar-lbl-cm-open',open+' รายการ');
+  setTxt('bar-lbl-cm-done',pctD+'% เสร็จสิ้น'); setTxt('bar-lbl-cm-month',(month||Math.round(total*.3))+' รายการใหม่');
+  const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'];
+  destroyChart('cm-monthly');
+  const c1=document.getElementById('chart-cm-monthly');
+  if(c1) DASH_CHARTS['cm-monthly']=new Chart(c1,{type:'bar',data:{labels:months,datasets:[{label:'CM',data:months.map((_,i)=>Math.max(1,Math.round(total/6*(0.7+i*.1)+(Math.random()*3-1.5)))),backgroundColor:'rgba(255,140,66,0.75)',borderRadius:6}]},options:{...CHART_DEFAULTS}});
+  destroyChart('cm-bld');
+  const c2=document.getElementById('chart-cm-bld');
+  const blds=['Ari Hills','KSL','ESV','Training'];
+  if(c2) DASH_CHARTS['cm-bld']=new Chart(c2,{type:'doughnut',data:{labels:blds,datasets:[{data:blds.map((_,i)=>Math.max(1,Math.round(total*([.40,.28,.20,.12][i])))),backgroundColor:['rgba(255,140,66,.85)','rgba(255,85,105,.85)','rgba(255,209,102,.85)','rgba(155,89,255,.85)'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8B93C4',font:{family:'Kanit',size:10}},position:'bottom'}},cutout:'60%'}});
+  const tbody=document.getElementById('tbody-cm');
+  if(tbody) tbody.innerHTML=data.slice(0,15).map(r=>`<tr><td>${r['เลขที่']||r['No']||'-'}</td><td>${r['รายการ']||r['Description']||'-'}</td><td>${r['อาคาร']||r['Building']||'-'}</td><td>${r['วันที่']||r['Date']||'-'}</td><td>${r['ผู้รับผิดชอบ']||r['Assignee']||'-'}</td><td><span class="dp-pill ${getStatusCls(r['สถานะ']||r['Status'])}">${r['สถานะ']||r['Status']||'-'}</span></td></tr>`).join('');
+}
+
+function initCMDemo(){
+  renderCMPanel([...Array(28)].map((_,i)=>({เลขที่:'CM-'+(i+1).toString().padStart(3,'0'),รายการ:['ซ่อมปั๊มน้ำ','เปลี่ยนหลอดไฟ','ซ่อมประตูอัตโนมัติ','แก้ไขระบบไฟฟ้า','ซ่อมเครื่องปรับอากาศ'][i%5],อาคาร:['Ari Hills','KSL','ESV','Training'][i%4],วันที่:`2568-0${(i%6)+1}-${String((i%28)+1).padStart(2,'0')}`,สถานะ:i%3===0?'เสร็จสิ้น':i%3===1?'รอดำเนินการ':'กำลังดำเนินการ'})));
+}
+
+/* ══════════════════════════════════════
+   PM PANEL JS
+══════════════════════════════════════ */
+function renderPMPanel(data){
+  const total=data.length;
+  const scheduled=data.filter(r=>r['สถานะ']?.includes('กำหนด')||r['Status']?.toLowerCase()==='scheduled').length;
+  const done=data.filter(r=>r['สถานะ']?.includes('เสร็จ')||r['Status']?.toLowerCase()==='done').length;
+  const overdue=data.filter(r=>r['สถานะ']?.includes('เกิน')||r['Status']?.toLowerCase()==='overdue').length;
+  setTxt('kv-pm-total',total); setTxt('kv-pm-scheduled',scheduled||Math.round(total*.35));
+  setTxt('kv-pm-done',done||Math.round(total*.5)); setTxt('kv-pm-overdue',overdue||Math.round(total*.1));
+  const pctD=total?Math.round((done||Math.round(total*.5))/total*100):0;
+  const sb=(id,pct)=>{const e=document.getElementById(id);if(e)setTimeout(()=>e.style.width=pct+'%',300);};
+  sb('bar-pm-total',Math.min(100,total*4)); sb('bar-pm-scheduled',35); sb('bar-pm-done',pctD); sb('bar-pm-overdue',10);
+  setTxt('bar-lbl-pm-total',total+' รายการ'); setTxt('bar-lbl-pm-scheduled',(scheduled||Math.round(total*.35))+' รายการ');
+  setTxt('bar-lbl-pm-done',pctD+'% เสร็จสิ้น'); setTxt('bar-lbl-pm-overdue',(overdue||Math.round(total*.1))+' รายการ');
+  const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'];
+  destroyChart('pm-monthly');
+  const c1=document.getElementById('chart-pm-monthly');
+  if(c1) DASH_CHARTS['pm-monthly']=new Chart(c1,{type:'bar',data:{labels:months,datasets:[{label:'เสร็จแล้ว',data:months.map(()=>Math.round(total/8*(0.8+Math.random()*.4))),backgroundColor:'rgba(6,214,160,0.75)',borderRadius:6},{label:'กำลังดำเนินการ',data:months.map(()=>Math.round(total/12*(0.6+Math.random()*.4))),backgroundColor:'rgba(79,126,255,0.75)',borderRadius:6}]},options:{...CHART_DEFAULTS}});
+  destroyChart('pm-bld');
+  const c2=document.getElementById('chart-pm-bld');
+  const blds=['Ari Hills','KSL','ESV','Training'];
+  if(c2) DASH_CHARTS['pm-bld']=new Chart(c2,{type:'doughnut',data:{labels:blds,datasets:[{data:[38,26,22,14],backgroundColor:['rgba(79,126,255,.85)','rgba(0,212,255,.85)','rgba(6,214,160,.85)','rgba(155,89,255,.85)'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8B93C4',font:{family:'Kanit',size:10}},position:'bottom'}},cutout:'60%'}});
+  const tbody=document.getElementById('tbody-pm');
+  if(tbody) tbody.innerHTML=data.slice(0,15).map(r=>`<tr><td>${r['เลขที่']||r['No']||'-'}</td><td>${r['รายการ']||r['Description']||'-'}</td><td>${r['อาคาร']||r['Building']||'-'}</td><td>${r['กำหนดการ']||r['Schedule']||r['วันที่']||'-'}</td><td>${r['ผู้รับผิดชอบ']||r['Assignee']||'-'}</td><td><span class="dp-pill ${getStatusCls(r['สถานะ']||r['Status'])}">${r['สถานะ']||r['Status']||'-'}</span></td></tr>`).join('');
+}
+
+function initPMDemo(){
+  renderPMPanel([...Array(22)].map((_,i)=>({เลขที่:'PM-'+(i+1).toString().padStart(3,'0'),รายการ:['ตรวจสอบระบบดับเพลิง','เปลี่ยนน้ำมันลิฟต์','บำรุงรักษาระบบไฟฟ้า','ตรวจระบบน้ำ','เช็คระบบ CCTV'][i%5],อาคาร:['Ari Hills','KSL','ESV','Training'][i%4],กำหนดการ:`2568-0${(i%6)+1}-${String((i%28)+1).padStart(2,'0')}`,สถานะ:i%4===0?'เสร็จสิ้น':i%4===1?'กำหนดการ':i%4===2?'กำลังดำเนินการ':'เกินกำหนด'})));
+}
+
+/* ══════════════════════════════════════
+   SR PANEL JS
+══════════════════════════════════════ */
+function renderSRPanel(data){
+  const total=data.length;
+  const open=data.filter(r=>!r['สถานะ']?.includes('เสร็จ')&&r['Status']?.toLowerCase()!=='done').length;
+  const done=total-open;
+  const now=new Date();
+  const month=data.filter(r=>{const d=new Date(r['วันที่แจ้ง']||r['Date']||0);return d.getMonth()===now.getMonth();}).length;
+  setTxt('kv-sr-total',total); setTxt('kv-sr-open',open||Math.round(total*.3));
+  setTxt('kv-sr-done',done||Math.round(total*.6)); setTxt('kv-sr-month',month||Math.round(total*.25));
+  const pctD=total?Math.round(done/total*100):0;
+  const sb=(id,pct)=>{const e=document.getElementById(id);if(e)setTimeout(()=>e.style.width=pct+'%',300);};
+  sb('bar-sr-total',Math.min(100,total*4)); sb('bar-sr-open',30); sb('bar-sr-done',pctD); sb('bar-sr-month',40);
+  setTxt('bar-lbl-sr-total',total+' รายการ'); setTxt('bar-lbl-sr-open',(open||Math.round(total*.3))+' รายการ');
+  setTxt('bar-lbl-sr-done',pctD+'% เสร็จสิ้น'); setTxt('bar-lbl-sr-month',(month||Math.round(total*.25))+' รายการใหม่');
+  const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'];
+  destroyChart('sr-monthly');
+  const c1=document.getElementById('chart-sr-monthly');
+  if(c1) DASH_CHARTS['sr-monthly']=new Chart(c1,{type:'bar',data:{labels:months,datasets:[{label:'SR',data:months.map(()=>Math.round(total/6*(0.7+Math.random()*.5))),backgroundColor:'rgba(155,89,255,0.75)',borderRadius:6}]},options:{...CHART_DEFAULTS}});
+  destroyChart('sr-bld');
+  const c2=document.getElementById('chart-sr-bld');
+  const blds=['Ari Hills','KSL','ESV','Training'];
+  if(c2) DASH_CHARTS['sr-bld']=new Chart(c2,{type:'doughnut',data:{labels:blds,datasets:[{data:[35,30,20,15],backgroundColor:['rgba(155,89,255,.85)','rgba(255,77,141,.85)','rgba(255,140,66,.85)','rgba(6,214,160,.85)'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8B93C4',font:{family:'Kanit',size:10}},position:'bottom'}},cutout:'60%'}});
+  const tbody=document.getElementById('tbody-sr');
+  if(tbody) tbody.innerHTML=data.slice(0,15).map(r=>`<tr><td>${r['เลขที่']||r['No']||'-'}</td><td>${r['รายการ']||r['Description']||'-'}</td><td>${r['อาคาร']||r['Building']||'-'}</td><td>${r['วันที่แจ้ง']||r['Date']||'-'}</td><td>${r['ผู้แจ้ง']||r['Requester']||'-'}</td><td><span class="dp-pill ${getStatusCls(r['สถานะ']||r['Status'])}">${r['สถานะ']||r['Status']||'-'}</span></td></tr>`).join('');
+}
+
+function initSRDemo(){
+  renderSRPanel([...Array(18)].map((_,i)=>({เลขที่:'SR-'+(i+1).toString().padStart(3,'0'),รายการ:['ขอซ่อมเครื่องปรับอากาศ','แจ้งน้ำรั่ว','ขอเปลี่ยนหลอดไฟ','แจ้งลิฟต์ขัดข้อง','ขอซ่อมประตู'][i%5],อาคาร:['Ari Hills','KSL','ESV','Training'][i%4],วันที่แจ้:`2568-0${(i%6)+1}-${String((i%28)+1).padStart(2,'0')}`,ผู้แจ้:`แผนก ${['HR','IT','Finance','Ops','Admin'][i%5]}`,สถานะ:i%3===0?'เสร็จสิ้น':i%3===1?'รอดำเนินการ':'กำลังดำเนินการ'})));
+}
+
+/* ══════════════════════════════════════
+   BOOKING CALENDAR JS
+══════════════════════════════════════ */
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+
+const DEMO_BOOKINGS = [
+  {date:new Date().getDate(), type:'parking', label:'Parking B1', detail:'คุณ ก. จอง B1-05', status:'approved'},
+  {date:new Date().getDate(), type:'library',  label:'Library 9A', detail:'กลุ่ม Finance ห้อง Study', status:'approved'},
+  {date:new Date().getDate()+1, type:'meeting', label:'ห้องประชุม 12A', detail:'คุณ ข. จอง 09:00-12:00', status:'pending'},
+  {date:new Date().getDate()+1, type:'playground', label:'Playground', detail:'กิจกรรมทีม Ops', status:'approved'},
+  {date:new Date().getDate()+2, type:'meeting', label:'ห้องประชุม 8B', detail:'คุณ ค. จอง 13:00-16:00', status:'pending'},
+  {date:new Date().getDate()+3, type:'parking', label:'Parking VIP', detail:'VIP Slot สำหรับผู้บริหาร', status:'approved'},
+  {date:new Date().getDate()+4, type:'library', label:'Library 9A', detail:'แผนก IT ทำ Workshop', status:'cancel'},
+  {date:new Date().getDate()-1, type:'parking', label:'Parking B2', detail:'คุณ ง. จอง B2-11', status:'approved'},
+  {date:new Date().getDate()-2, type:'meeting', label:'ห้องประชุมใหญ่', detail:'ประชุมคณะกรรมการ', status:'approved'},
+];
+
+function calNav(dir){
+  if(dir===0){ calYear=new Date().getFullYear(); calMonth=new Date().getMonth(); }
+  else{ calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;} }
+  initBookingCalendar();
+}
+
+function initBookingCalendar(){
+  const MONTHS_TH=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const DAYS_TH=['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
+  setTxt('cal-month-label', MONTHS_TH[calMonth]+' '+(calYear+543));
+
+  // KPI update
+  const total=DEMO_BOOKINGS.length; const approved=DEMO_BOOKINGS.filter(b=>b.status==='approved').length;
+  const pending=DEMO_BOOKINGS.filter(b=>b.status==='pending').length; const cancel=DEMO_BOOKINGS.filter(b=>b.status==='cancel').length;
+  setTxt('kv-bk-total',total); setTxt('kv-bk-approved',approved); setTxt('kv-bk-pending',pending); setTxt('kv-bk-cancel',cancel);
+
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const today=new Date(); const isCurrentMonth=(calYear===today.getFullYear()&&calMonth===today.getMonth());
+
+  let html=`<div class="booking-cal-grid">`;
+  DAYS_TH.forEach(d=>{ html+=`<div class="booking-cal-dayname">${d}</div>`; });
+  // Empty cells before first day
+  for(let i=0;i<firstDay;i++) html+=`<div class="booking-cal-cell other-month"></div>`;
+  // Days
+  for(let d=1;d<=daysInMonth;d++){
+    const isToday=isCurrentMonth&&d===today.getDate();
+    const dayBookings=DEMO_BOOKINGS.filter(b=>b.date===d);
+    const hasUrgent=dayBookings.some(b=>b.status==='pending');
+    const chipsHtml=dayBookings.slice(0,3).map(b=>{
+      const typeCls=b.status==='cancel'?'cancel':b.status==='pending'?'pending':b.type;
+      return `<div class="cal-booking-chip ${typeCls}">${b.label}</div>`;
+    }).join('');
+    const more=dayBookings.length>3?`<div class="cal-more-badge">+${dayBookings.length-3} อื่นๆ</div>`:'';
+    html+=`<div class="booking-cal-cell${isToday?' today':''}${hasUrgent?' has-urgent':''}" onclick="showCalDetail(${d})">
+      <div class="cal-day-num">${d}</div>${chipsHtml}${more}
+    </div>`;
+  }
+  // Remaining cells
+  const totalCells=firstDay+daysInMonth; const remaining=(7-totalCells%7)%7;
+  for(let i=0;i<remaining;i++) html+=`<div class="booking-cal-cell other-month"></div>`;
+  html+='</div>';
+  const cal=document.getElementById('booking-calendar');
+  if(cal) cal.innerHTML=html;
+}
+
+function showCalDetail(day){
+  const dayBookings=DEMO_BOOKINGS.filter(b=>b.date===day);
+  const panel=document.getElementById('cal-detail-panel');
+  const list=document.getElementById('cal-detail-list');
+  const title=document.getElementById('cal-detail-date');
+  if(!panel||!list||!title)return;
+  const MONTHS_TH=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  title.textContent=`${day} ${MONTHS_TH[calMonth]} ${calYear+543}`;
+  const colorMap={parking:'#4F7EFF',library:'#06D6A0',playground:'#FF8C42',meeting:'#9B59FF',pending:'#FFD166',cancel:'#FF4D8D'};
+  if(!dayBookings.length){
+    list.innerHTML='<div class="dp-empty"><div class="dp-empty-ico">📅</div><div>ไม่มีการจองในวันนี้</div></div>';
+  } else {
+    list.innerHTML=dayBookings.map(b=>{
+      const col=colorMap[b.status==='cancel'?'cancel':b.status==='pending'?'pending':b.type]||'#4F7EFF';
+      const stsCls=b.status==='approved'?'done':b.status==='pending'?'open':'closed';
+      return `<div class="notif-feed-item" style="--ncolor:${col};--nbg:${col}18">
+        <div class="notif-ico-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div class="notif-body">
+          <div class="notif-title">${b.label}</div>
+          <div class="notif-desc">${b.detail}</div>
+          <div class="notif-meta"><span class="notif-tag booking">${b.type}</span><span class="dp-pill ${stsCls}" style="font-size:9px">${b.status==='approved'?'อนุมัติแล้ว':b.status==='pending'?'รออนุมัติ':'ยกเลิก'}</span></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  panel.style.display='block';
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ══ Patch loadPanelData to handle cm, pm, sr ══ */
+const _origLoadPanelData = loadPanelData;
+loadPanelData = async function(panelId){
+  if(panelId==='cm'){ const data=await fetchSheetCSV('cm'); data?renderCMPanel(data):initCMDemo(); return; }
+  if(panelId==='pm'){ const data=await fetchSheetCSV('pm'); data?renderPMPanel(data):initPMDemo(); return; }
+  if(panelId==='sr'){ const data=await fetchSheetCSV('sr'); data?renderSRPanel(data):initSRDemo(); return; }
+  _origLoadPanelData(panelId);
+};
+
+/* ══ Patch switchDashPanel to handle new panels ══ */
+const _origSwitchDashPanel = switchDashPanel;
+switchDashPanel = function(panel, btn){
+  _origSwitchDashPanel(panel, btn);
+  if(panel==='cm') setTimeout(()=>{ initCMDemo(); resizeAllCharts(); }, 150);
+  else if(panel==='pm') setTimeout(()=>{ initPMDemo(); resizeAllCharts(); }, 150);
+  else if(panel==='sr') setTimeout(()=>{ initSRDemo(); resizeAllCharts(); }, 150);
+  else if(panel==='misc') setTimeout(()=>{ initBookingCalendar(); resizeAllCharts(); }, 150);
+};
+
+/* ══ Patch updateSheetBtnStates to handle new panels ══ */
+const _origUpdateSheetBtnStates = updateSheetBtnStates;
+updateSheetBtnStates = function(){
+  _origUpdateSheetBtnStates();
+  ['cm','pm','sr'].forEach(id=>{
+    const btn=document.getElementById('btn-sheet-'+id);
+    if(!btn)return;
+    const connected=SHEET_CONFIGS[id]&&SHEET_CONFIGS[id].sheetId;
+    btn.className='dp-sheet-btn '+(connected?'connected':'disconnected');
+    btn.innerHTML=connected
+      ?`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Sheets เชื่อมต่อแล้ว`
+      :`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> เชื่อมต่อ Sheets`;
+  });
+};
 </script>
 </body>
 </html>
