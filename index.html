@@ -29,7 +29,23 @@ body.light-mode::before { background-image:radial-gradient(circle at 15% 20%,rgb
 body.light-mode .dot-grid { opacity:.10; background-image:radial-gradient(circle,rgba(26,35,64,.12) 1px,transparent 1px); }
 body.light-mode body::after { opacity:.07; }
 
-/* theme toggle button */
+/* ══ SLIDESHOW ══ */
+.slide-frame { display:none; transition:opacity .4s ease; }
+.slide-frame.active { display:block; animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both; }
+.slide-dot {
+  width:8px; height:8px; border-radius:50%; border:none; cursor:pointer;
+  background:rgba(255,255,255,.18); transition:all .2s; padding:0; flex-shrink:0;
+}
+.slide-dot.active { background:var(--cyan); box-shadow:0 0 7px var(--cyan); width:20px; border-radius:4px; }
+.slide-tab-btn {
+  font-family:Kanit; font-size:10px; font-weight:700;
+  padding:4px 11px; border-radius:20px; border:1.5px solid var(--border2);
+  background:transparent; color:var(--text2); cursor:pointer; transition:all .18s; white-space:nowrap;
+}
+.slide-tab-btn:hover { color:var(--text); border-color:var(--text2); }
+.slide-tab-btn.active { background:linear-gradient(135deg,#4F7EFF,#9B59FF); color:#fff; border-color:transparent; box-shadow:0 2px 8px rgba(79,126,255,.40); }
+
+/* theme-toggle-btn */
 .theme-toggle-btn {
   display:flex; align-items:center; gap:5px;
   width:34px; height:34px; border-radius:50%;
@@ -43,7 +59,8 @@ body{font-family:'Sarabun','Kanit',sans-serif;background:var(--bg);min-height:10
 body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:var(--bgimg,none);background-size:cover;background-position:center;background-attachment:scroll;opacity:.13;filter:saturate(.6) brightness(.7);mix-blend-mode:luminosity;will-change:auto;transform:translateZ(0);}
 .dot-grid{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18;background-image:radial-gradient(circle,rgba(255,255,255,.12) 1px,transparent 1px);background-size:28px 28px;transform:translateZ(0);}
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle at 15% 20%,rgba(79,126,255,.10) 0%,transparent 45%),radial-gradient(circle at 85% 75%,rgba(155,89,255,.10) 0%,transparent 45%),radial-gradient(circle at 55% 45%,rgba(6,214,160,.05) 0%,transparent 35%);}
-.wrap{position:relative;z-index:1;width:calc(100% - 240px);max-width:calc(100% - 240px);margin-left:240px;padding:0 1.8rem 5rem;overflow-x:hidden;}
+.wrap{position:relative;z-index:1;width:calc(100% - 240px);max-width:calc(100% - 240px);margin-left:240px;padding:0 1.8rem 5rem;overflow-x:hidden;transition:width .28s cubic-bezier(.22,1,.36,1),margin-left .28s cubic-bezier(.22,1,.36,1);}
+body.sidebar-collapsed .wrap{width:100%;max-width:100%;margin-left:0;}
 
 /* ══ SIDEBAR ══ */
 /* Fixed left sidebar — full height */
@@ -58,7 +75,25 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
   scrollbar-width:none;
   animation:none;
   margin:0; height:100vh; border-radius:0;
+  transition:transform .28s cubic-bezier(.22,1,.36,1);
 }
+body.sidebar-collapsed .topbar { transform:translateX(-240px); }
+
+/* Sidebar toggle button */
+.sidebar-toggle-btn {
+  position:fixed; left:248px; top:50%; transform:translateY(-50%);
+  z-index:400; width:20px; height:48px;
+  background:rgba(14,17,32,0.98); border:1px solid var(--border2);
+  border-left:none; border-radius:0 8px 8px 0;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; color:var(--text2); transition:all .28s cubic-bezier(.22,1,.36,1);
+  box-shadow:4px 0 12px rgba(0,0,0,.3);
+}
+.sidebar-toggle-btn:hover { color:var(--blue); background:rgba(79,126,255,.12); border-color:rgba(79,126,255,.35); }
+.sidebar-toggle-btn svg { transition:transform .28s; }
+body.sidebar-collapsed .sidebar-toggle-btn { left:8px; border-left:1px solid var(--border2); border-radius:8px; }
+body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
+body.light-mode .sidebar-toggle-btn { background:rgba(238,241,252,0.99); }
 .topbar::-webkit-scrollbar { display:none; }
 .topbar.hidden { display:flex !important; } /* sidebar always visible on desktop — mobile overrides below */
 body.light-mode .topbar {
@@ -216,8 +251,8 @@ body.light-mode .topbar {
 .dash-settings-btn:hover { color:var(--cyan); border-color:rgba(0,212,255,.35); }
 
 /* ── Content area ── */
-.dash-content { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0; }
-.dash-panel-view { display:none; flex:1; flex-direction:column; overflow-y:auto; min-height:0; }
+.dash-content { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0; height:calc(100vh - 54px); }
+.dash-panel-view { display:none; flex-direction:column; overflow-y:auto; min-height:0; }
 .dash-panel-view.active { display:flex; animation:fadeUp .35s cubic-bezier(.22,1,.36,1) both; }
 
 /* ── Panel header ── */
@@ -1696,6 +1731,11 @@ body.light-mode .bottom-nav {
 </div>
 
 
+<!-- Sidebar Toggle Button -->
+<button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="ซ่อน/แสดงเมนู">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+</button>
+
 <!-- DASHBOARD v3 -->
 <div class="view view-dash" id="view-dash">
   <div class="dash-layout">
@@ -1752,110 +1792,86 @@ body.light-mode .bottom-nav {
     <div class="dash-content">
 
       <!-- ระบบแจ้งเตือน Notification System -->
-      <div class="dash-panel-view active" id="panel-overview">
-        <div class="dp-header">
-          <div class="dp-header-left">
-            <div class="dp-panel-title">🔔 ระบบแจ้งเตือน</div>
-            <div class="dp-panel-sub">Notification System — การแจ้งเตือนจากกลุ่มงานต่างๆ</div>
-          </div>
-          <div class="dp-header-right">
-            <button class="dp-sheet-btn disconnected" id="btn-sheet-overview" onclick="openSheetConfig('overview')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Sheets</button>
-            <button class="dp-refresh-btn" onclick="renderOverview()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>รีเฟรช</button>
-          </div>
-        </div>
-        <div class="dp-body">
-          <!-- KPI row - svc-kpi-card style -->
-          <div class="svc-kpi-grid">
-            <div class="svc-kpi-card">
-              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#FF4D8D 0%,#FF5569 100%)">
-                <div class="sk-deco1"></div><div class="sk-deco2"></div>
-                <div class="svc-kpi-num" id="notif-urgent">0</div>
-                <span class="svc-kpi-tag">เร่งด่วน</span>
-                <div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-              </div>
-              <div class="svc-kpi-body">
-                <div class="svc-kpi-name">แจ้งเตือนเร่งด่วน</div>
-                <div class="svc-kpi-desc">Urgent — ต้องดำเนินการทันที</div>
-                <div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="notif-bar-urgent" style="width:0%;background:linear-gradient(90deg,#FF4D8D,#FF5569)"></div></div><div class="svc-kpi-bar-label" id="notif-lbl-urgent">0 รายการ</div></div>
-              </div>
-            </div>
-            <div class="svc-kpi-card">
-              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#FFD166 0%,#FF8C42 100%)">
-                <div class="sk-deco1"></div><div class="sk-deco2"></div>
-                <div class="svc-kpi-num" id="notif-pending">0</div>
-                <span class="svc-kpi-tag">รอดำเนินการ</span>
-                <div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-              </div>
-              <div class="svc-kpi-body">
-                <div class="svc-kpi-name">รอดำเนินการ</div>
-                <div class="svc-kpi-desc">Pending — ยังไม่ได้รับการตอบสนอง</div>
-                <div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="notif-bar-pending" style="width:0%;background:linear-gradient(90deg,#FFD166,#FF8C42)"></div></div><div class="svc-kpi-bar-label" id="notif-lbl-pending">0 รายการ</div></div>
-              </div>
-            </div>
-            <div class="svc-kpi-card">
-              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#06D6A0 0%,#00B4CC 100%)">
-                <div class="sk-deco1"></div><div class="sk-deco2"></div>
-                <div class="svc-kpi-num" id="notif-done">0</div>
-                <span class="svc-kpi-tag">เสร็จแล้ว</span>
-                <div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
-              </div>
-              <div class="svc-kpi-body">
-                <div class="svc-kpi-name">ดำเนินการแล้ว</div>
-                <div class="svc-kpi-desc">Resolved — ตอบสนองแล้ว</div>
-                <div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="notif-bar-done" style="width:100%;background:linear-gradient(90deg,#06D6A0,#00B4CC)"></div></div><div class="svc-kpi-bar-label" id="notif-lbl-done">0 รายการ</div></div>
-              </div>
-            </div>
-            <div class="svc-kpi-card">
-              <div class="svc-kpi-zone" style="--skgrad:linear-gradient(145deg,#4F7EFF 0%,#9B59FF 100%)">
-                <div class="sk-deco1"></div><div class="sk-deco2"></div>
-                <div class="svc-kpi-num" id="notif-total">0</div>
-                <span class="svc-kpi-tag">รวม</span>
-                <div class="svc-kpi-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
-              </div>
-              <div class="svc-kpi-body">
-                <div class="svc-kpi-name">แจ้งเตือนทั้งหมด</div>
-                <div class="svc-kpi-desc">All Notifications — เดือนนี้</div>
-                <div class="svc-kpi-bar-wrap"><div class="svc-kpi-bar-track"><div class="svc-kpi-bar-fill" id="notif-bar-total" style="width:0%;background:linear-gradient(90deg,#4F7EFF,#9B59FF)"></div></div><div class="svc-kpi-bar-label" id="notif-lbl-total">0 รายการ</div></div>
-              </div>
-            </div>
+      <div class="dash-panel-view active" id="panel-overview" style="display:flex;flex-direction:column;height:calc(100vh - 54px);overflow:hidden;">
+
+        <!-- ── Slideshow Header ── -->
+        <div style="display:flex;align-items:center;gap:10px;padding:.55rem 1.2rem;border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(22,25,45,0.80);">
+          <!-- Title -->
+          <div style="font-family:Kanit;font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px;">
+            🔔 <span id="slide-title-text">ระบบแจ้งเตือน LINE</span>
           </div>
 
-          <!-- Notification feed -->
-          <div class="dp-chart-row">
-            <div class="dp-chart-card" style="flex:2">
-              <div class="dp-chart-header">
-                <div class="dp-chart-header-left">
-                  <div class="dp-chart-title">📋 รายการแจ้งเตือนล่าสุด</div>
-                  <div class="dp-chart-sub">แสดงการแจ้งเตือนจากกลุ่มงานทั้งหมด</div>
-                </div>
-                <div class="dp-chart-controls">
-                  <select class="dp-month-select" id="notif-filter-group" onchange="renderNotifFeed()">
-                    <option value="all">ทุกกลุ่มงาน</option>
-                    <option value="cm">CM</option>
-                    <option value="pm">PM</option>
-                    <option value="sr">SR</option>
-                    <option value="project">Project</option>
-                    <option value="otair">OT AIR</option>
-                    <option value="booking">การจอง</option>
-                  </select>
-                  <select class="dp-month-select" id="notif-filter-status" onchange="renderNotifFeed()">
-                    <option value="all">ทุกสถานะ</option>
-                    <option value="urgent">เร่งด่วน</option>
-                    <option value="pending">รอดำเนินการ</option>
-                    <option value="done">เสร็จแล้ว</option>
-                  </select>
-                </div>
-              </div>
-              <div id="notif-feed-list" style="display:flex;flex-direction:column;gap:8px;margin-top:.8rem;min-height:200px"></div>
-            </div>
-            <div class="dp-chart-card" style="flex:1;min-width:0">
-              <div class="dp-chart-title">สัดส่วนตามกลุ่มงาน</div>
-              <div class="dp-chart-sub">แจ้งเตือนเดือนนี้</div>
-              <div class="dp-chart-wrap" style="height:200px"><canvas id="chart-notif-donut"></canvas></div>
-              <div class="dp-chart-title" style="margin-top:1rem">แนวโน้มรายเดือน</div>
-              <div class="dp-chart-wrap" style="height:140px"><canvas id="chart-notif-trend"></canvas></div>
-            </div>
+          <!-- Slide dots -->
+          <div style="display:flex;gap:6px;margin-left:.6rem;" id="slide-dots">
+            <button onclick="goSlide(0)" class="slide-dot active" id="dot-0" title="LINE Notify"></button>
+            <button onclick="goSlide(1)" class="slide-dot" id="dot-1" title="ปฏิทินจองห้องสมุด"></button>
+            <button onclick="goSlide(2)" class="slide-dot" id="dot-2" title="ปฏิทินจองจอดรถ"></button>
           </div>
+
+          <!-- Slide labels -->
+          <div style="display:flex;gap:6px;margin-left:.2rem;">
+            <button onclick="goSlide(0)" class="slide-tab-btn active" id="tab-0">🔔 LINE Notify</button>
+            <button onclick="goSlide(1)" class="slide-tab-btn" id="tab-1">📚 ห้องสมุด</button>
+            <button onclick="goSlide(2)" class="slide-tab-btn" id="tab-2">🚗 จอดรถ</button>
+          </div>
+
+          <div style="flex:1"></div>
+
+          <!-- Auto-play indicator -->
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="position:relative;width:28px;height:28px;">
+              <svg width="28" height="28" style="transform:rotate(-90deg)">
+                <circle cx="14" cy="14" r="11" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="2.5"/>
+                <circle id="slide-progress-ring" cx="14" cy="14" r="11" fill="none" stroke="var(--cyan)" stroke-width="2.5"
+                  stroke-dasharray="69.1" stroke-dashoffset="0" style="transition:stroke-dashoffset .1s linear;"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                <span id="slide-countdown" style="font-family:Kanit;font-size:8px;font-weight:700;color:var(--cyan);">10</span>
+              </div>
+            </div>
+            <button id="slide-play-btn" onclick="toggleSlidePlay()" style="display:flex;align-items:center;gap:5px;font-family:Kanit;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;border:1.5px solid rgba(0,212,255,.30);background:rgba(0,212,255,.07);color:var(--cyan);cursor:pointer;transition:all .18s;">
+              <svg id="slide-play-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              <span id="slide-play-label">หยุด</span>
+            </button>
+            <!-- Prev / Next -->
+            <button onclick="prevSlide()" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button onclick="nextSlide()" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <!-- Open in new tab -->
+            <a id="slide-open-link" href="https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/" target="_blank" style="font-size:10px;color:var(--cyan);text-decoration:none;font-family:Kanit;font-weight:600;padding:4px 10px;border:1.5px solid rgba(0,212,255,.3);border-radius:20px;background:rgba(0,212,255,.07);white-space:nowrap;">เปิดใหม่ ↗</a>
+          </div>
+        </div>
+
+        <!-- ── Slide Frames ── -->
+        <div style="flex:1;position:relative;overflow:hidden;min-height:0;">
+
+          <!-- Slide 0: LINE Notify -->
+          <div class="slide-frame active" id="slide-0" style="position:absolute;inset:0;background:var(--bg2);">
+            <iframe src="https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/"
+              style="width:100%;height:100%;border:none;display:block;"
+              title="LINE Maintenance Notification"
+            ></iframe>
+          </div>
+
+          <!-- Slide 1: Library -->
+          <div class="slide-frame" id="slide-1" style="position:absolute;inset:0;background:var(--bg2);">
+            <iframe src="https://chaiwatsuthacheewa-creator.github.io/NTL-Library-Room/"
+              style="width:100%;height:100%;border:none;display:block;"
+              title="Library Room Booking"
+            ></iframe>
+          </div>
+
+          <!-- Slide 2: Car Park -->
+          <div class="slide-frame" id="slide-2" style="position:absolute;inset:0;background:var(--bg2);">
+            <iframe src="https://add00917-hue.github.io/carpark/"
+              style="width:100%;height:100%;border:none;display:block;"
+              title="Car Park Booking"
+            ></iframe>
+          </div>
+
         </div>
       </div>
 
@@ -2538,6 +2554,125 @@ body.light-mode .bottom-nav {
 
 <script>
 /* ══════════════════════════════
+   SIDEBAR TOGGLE
+══════════════════════════════ */
+function toggleSidebar(){
+  document.body.classList.toggle('sidebar-collapsed');
+  setTimeout(()=>{ resizeAllCharts && resizeAllCharts(); }, 300);
+}
+
+/* ══════════════════════════════
+   SLIDESHOW — ระบบแจ้งเตือน
+   • สลับอัตโนมัติทุก AUTO_INTERVAL วิ
+   • กดปุ่ม reset timer → ถ้าไม่กดอีก IDLE_RESET วิ จะ autoplay ต่อ
+══════════════════════════════ */
+(function(){
+  const AUTO_INTERVAL = 15;   // วินาทีระหว่าง slide
+  const IDLE_RESET    = 15;   // วินาทีที่ไม่กดแล้ว resume autoplay
+
+  const SLIDES = [
+    { id:'slide-0', tabId:'tab-0', dotId:'dot-0', label:'🔔 ระบบแจ้งเตือน LINE',   link:'https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/' },
+    { id:'slide-1', tabId:'tab-1', dotId:'dot-1', label:'📚 ปฏิทินจองห้องสมุด',    link:'https://chaiwatsuthacheewa-creator.github.io/NTL-Library-Room/' },
+    { id:'slide-2', tabId:'tab-2', dotId:'dot-2', label:'🚗 ปฏิทินจองจอดรถ',       link:'https://add00917-hue.github.io/carpark/' },
+  ];
+
+  let current   = 0;
+  let isPlaying = true;
+  let countdown = AUTO_INTERVAL;
+  let tickTimer = null;
+  let idleTimer = null;
+  const CIRCUMFERENCE = 2 * Math.PI * 11; // r=11
+
+  function showSlide(idx){
+    current = (idx + SLIDES.length) % SLIDES.length;
+    SLIDES.forEach((s, i) => {
+      const el  = document.getElementById(s.id);
+      const tab = document.getElementById(s.tabId);
+      const dot = document.getElementById(s.dotId);
+      if(el)  el.classList.toggle('active', i === current);
+      if(tab) tab.classList.toggle('active', i === current);
+      if(dot) dot.classList.toggle('active', i === current);
+    });
+    const titleEl = document.getElementById('slide-title-text');
+    const linkEl  = document.getElementById('slide-open-link');
+    if(titleEl) titleEl.textContent = SLIDES[current].label;
+    if(linkEl)  linkEl.href = SLIDES[current].link;
+  }
+
+  function updateRing(){
+    const ring = document.getElementById('slide-progress-ring');
+    const num  = document.getElementById('slide-countdown');
+    if(!ring || !num) return;
+    const pct = countdown / AUTO_INTERVAL;
+    ring.style.strokeDashoffset = CIRCUMFERENCE * (1 - pct);
+    num.textContent = Math.ceil(countdown);
+  }
+
+  function startTick(){
+    clearInterval(tickTimer);
+    countdown = AUTO_INTERVAL;
+    updateRing();
+    tickTimer = setInterval(()=>{
+      if(!isPlaying) return;
+      countdown -= 0.1;
+      updateRing();
+      if(countdown <= 0){
+        countdown = AUTO_INTERVAL;
+        showSlide(current + 1);
+      }
+    }, 100);
+  }
+
+  function pauseAutoplay(){
+    isPlaying = false;
+    const btn = document.getElementById('slide-play-btn');
+    const ico = document.getElementById('slide-play-icon');
+    const lbl = document.getElementById('slide-play-label');
+    if(btn){ btn.style.borderColor='rgba(255,209,102,.4)'; btn.style.background='rgba(255,209,102,.08)'; btn.style.color='var(--yellow)'; }
+    if(ico) ico.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+    if(lbl) lbl.textContent = 'เล่น';
+  }
+
+  function resumeAutoplay(){
+    isPlaying = true;
+    countdown = AUTO_INTERVAL;
+    const btn = document.getElementById('slide-play-btn');
+    const ico = document.getElementById('slide-play-icon');
+    const lbl = document.getElementById('slide-play-label');
+    if(btn){ btn.style.borderColor='rgba(0,212,255,.30)'; btn.style.background='rgba(0,212,255,.07)'; btn.style.color='var(--cyan)'; }
+    if(ico) ico.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+    if(lbl) lbl.textContent = 'หยุด';
+  }
+
+  function userInteracted(){
+    // หยุด autoplay ชั่วคราว แล้ว resume หลัง IDLE_RESET วิ
+    if(isPlaying) pauseAutoplay();
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(()=>{ resumeAutoplay(); countdown = AUTO_INTERVAL; }, IDLE_RESET * 1000);
+  }
+
+  // expose to global
+  window.goSlide = function(idx){ showSlide(idx); userInteracted(); };
+  window.nextSlide = function(){ showSlide(current + 1); userInteracted(); };
+  window.prevSlide = function(){ showSlide(current - 1); userInteracted(); };
+  window.toggleSlidePlay = function(){
+    if(isPlaying){ pauseAutoplay(); clearTimeout(idleTimer); }
+    else { resumeAutoplay(); }
+  };
+
+  // Init after DOM ready
+  document.addEventListener('DOMContentLoaded', ()=>{
+    showSlide(0);
+    startTick();
+  });
+  window.addEventListener('load', ()=>{
+    showSlide(0);
+    startTick();
+  });
+})();
+
+
+/* ══════════════════════════════
    CONSTANTS & DATA
 ══════════════════════════════ */
 const ADMIN_PASS = 'gnr3admin'; // เปลี่ยนรหัสผ่านได้ที่นี่
@@ -2709,7 +2844,7 @@ function switchDashPanel(panel, btn){
   document.querySelectorAll('.dash-panel-view').forEach(p=>p.classList.remove('active'));
   const pEl = document.getElementById('panel-'+panel);
   if(pEl){ void pEl.offsetWidth; pEl.classList.add('active'); }
-  if(panel==='overview') setTimeout(()=>{ renderOverview(); resizeAllCharts(); }, 150);
+  if(panel==='overview') { /* slideshow — no chart init needed */ }
   else if(panel==='misc') setTimeout(()=>{ initMiscCharts(); resizeAllCharts(); }, 120);
   else setTimeout(()=>{ initAllCharts(); resizeAllCharts(); }, 120);
 }
@@ -4396,7 +4531,8 @@ loadPanelData = async function(panelId){
 const _origSwitchDashPanel = switchDashPanel;
 switchDashPanel = function(panel, btn){
   _origSwitchDashPanel(panel, btn);
-  if(panel==='cm') setTimeout(()=>{ initCMDemo(); resizeAllCharts(); }, 150);
+  if(panel==='overview') { /* slideshow handles itself */ }
+  else if(panel==='cm') setTimeout(()=>{ initCMDemo(); resizeAllCharts(); }, 150);
   else if(panel==='pm') setTimeout(()=>{ initPMDemo(); resizeAllCharts(); }, 150);
   else if(panel==='sr') setTimeout(()=>{ initSRDemo(); resizeAllCharts(); }, 150);
   else if(panel==='misc') setTimeout(()=>{ initBookingCalendar(); resizeAllCharts(); }, 150);
