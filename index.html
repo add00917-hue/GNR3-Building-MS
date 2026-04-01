@@ -1,13 +1,23 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GNR3 ระบบบริหารจัดการสำนักงาน</title>
+<!-- Anti-FOUT: apply saved theme before first paint, zero JS overhead -->
+<script>
+(function(){
+  var t = localStorage.getItem('gnr3_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;400;500;600;700;800;900&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
+  /* ── Sidebar width — single source of truth ── */
+  --sw: 240px;
+
   /* ── Dark mode (default) ── */
   --bg:#141728; --bg2:#1C2038; --surface:#222644; --surface2:#2A2F52;
   --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
@@ -16,36 +26,37 @@
   --green:#06D6A0; --purple:#9B59FF; --blue:#4F7EFF; --red:#FF5569;
   --radius-xl:24px; --radius-lg:18px; --radius-md:13px; --radius-sm:9px;
   --shadow-sm:0 2px 12px rgba(0,0,0,.25); --shadow-md:0 8px 32px rgba(0,0,0,.35); --shadow-lg:0 20px 60px rgba(0,0,0,.50);
+  --topbar-bg:rgba(14,17,32,0.98);
+  --sidebar-bg:rgba(14,17,32,0.98);
+  --bottom-nav-bg:rgba(15,18,34,0.97);
 }
 
-/* ── Light mode ── */
-body.light-mode {
+/* ── Light mode — attribute selector (CSS handles everything, zero JS DOM walking) ── */
+[data-theme="light"] {
   --bg:#F0F2FA; --bg2:#E4E8F5; --surface:#FFFFFF; --surface2:#F5F7FF;
   --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.14);
   --text:#1A2340; --text2:#5A6A8E; --text3:#96A3C0;
   --shadow-sm:0 2px 12px rgba(26,35,64,.08); --shadow-md:0 8px 32px rgba(26,35,64,.12); --shadow-lg:0 20px 60px rgba(26,35,64,.16);
+  --topbar-bg:rgba(238,241,252,0.99);
+  --sidebar-bg:rgba(238,241,252,0.99);
+  --bottom-nav-bg:rgba(238,241,252,0.97);
 }
-body.light-mode::before { background-image:radial-gradient(circle at 15% 20%,rgba(79,126,255,.06) 0%,transparent 45%),radial-gradient(circle at 85% 75%,rgba(155,89,255,.06) 0%,transparent 45%); }
-body.light-mode .dot-grid { opacity:.10; background-image:radial-gradient(circle,rgba(26,35,64,.12) 1px,transparent 1px); }
-body.light-mode body::after { opacity:.07; }
 
-/* ══ SLIDESHOW ══ */
-.slide-frame { display:none; transition:opacity .4s ease; }
-.slide-frame.active { display:block; animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both; }
-.slide-dot {
-  width:8px; height:8px; border-radius:50%; border:none; cursor:pointer;
-  background:rgba(255,255,255,.18); transition:all .2s; padding:0; flex-shrink:0;
+/* light-mode decorative overrides */
+[data-theme="light"] body::before { background-image:radial-gradient(circle at 15% 20%,rgba(79,126,255,.06) 0%,transparent 45%),radial-gradient(circle at 85% 75%,rgba(155,89,255,.06) 0%,transparent 45%); }
+[data-theme="light"] .dot-grid { opacity:.10; background-image:radial-gradient(circle,rgba(26,35,64,.12) 1px,transparent 1px); }
+/* dash-content ต้องเป็น relative เพื่อให้ panel-overview absolute ได้ */
+.dash-content { position:relative; }
+#panel-overview {
+  display:none;
+  position:absolute; inset:0;
+  flex-direction:column;
+  overflow:hidden;
+  z-index:2;
 }
-.slide-dot.active { background:var(--cyan); box-shadow:0 0 7px var(--cyan); width:20px; border-radius:4px; }
-.slide-tab-btn {
-  font-family:Kanit; font-size:10px; font-weight:700;
-  padding:4px 11px; border-radius:20px; border:1.5px solid var(--border2);
-  background:transparent; color:var(--text2); cursor:pointer; transition:all .18s; white-space:nowrap;
-}
-.slide-tab-btn:hover { color:var(--text); border-color:var(--text2); }
-.slide-tab-btn.active { background:linear-gradient(135deg,#4F7EFF,#9B59FF); color:#fff; border-color:transparent; box-shadow:0 2px 8px rgba(79,126,255,.40); }
+#panel-overview.active { display:flex; }
 
-/* theme-toggle-btn */
+/* theme toggle button */
 .theme-toggle-btn {
   display:flex; align-items:center; gap:5px;
   width:34px; height:34px; border-radius:50%;
@@ -55,20 +66,75 @@ body.light-mode body::after { opacity:.07; }
 }
 .theme-toggle-btn:hover { border-color:var(--blue); color:var(--blue); transform:rotate(20deg); background:rgba(79,126,255,.10); }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Sarabun','Kanit',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);overflow-x:hidden;}
+html{height:100%;}
+
+/* ── Global Scrollbar Styling ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(79,126,255,.25) transparent;
+}
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(79,126,255,.35), rgba(155,89,255,.35));
+  border-radius: 99px;
+  transition: background .2s;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(79,126,255,.65), rgba(155,89,255,.65));
+}
+*::-webkit-scrollbar-corner { background: transparent; }
+
+[data-theme="light"] * {
+  scrollbar-color: rgba(79,126,255,.20) transparent;
+}
+[data-theme="light"] *::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(79,126,255,.22), rgba(155,89,255,.22));
+}
+[data-theme="light"] *::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(79,126,255,.45), rgba(155,89,255,.45));
+}
+body{
+  font-family:'Sarabun','Kanit',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;          /* ← sidebar + main เป็น flex siblings */
+  height:100dvh;         /* FIX: ต้องมี height จริง ไม่ใช่แค่ min-height */
+  overflow:hidden;       /* FIX: ป้องกัน body scroll — ให้ scroll อยู่ใน panel */
+}
 body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:var(--bgimg,none);background-size:cover;background-position:center;background-attachment:scroll;opacity:.13;filter:saturate(.6) brightness(.7);mix-blend-mode:luminosity;will-change:auto;transform:translateZ(0);}
 .dot-grid{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18;background-image:radial-gradient(circle,rgba(255,255,255,.12) 1px,transparent 1px);background-size:28px 28px;transform:translateZ(0);}
 body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle at 15% 20%,rgba(79,126,255,.10) 0%,transparent 45%),radial-gradient(circle at 85% 75%,rgba(155,89,255,.10) 0%,transparent 45%),radial-gradient(circle at 55% 45%,rgba(6,214,160,.05) 0%,transparent 35%);}
-.wrap{position:relative;z-index:1;width:calc(100% - 240px);max-width:calc(100% - 240px);margin-left:240px;padding:0 1.8rem 5rem;overflow-x:hidden;transition:width .28s cubic-bezier(.22,1,.36,1),margin-left .28s cubic-bezier(.22,1,.36,1);}
-body.sidebar-collapsed .wrap{width:100%;max-width:100%;margin-left:0;}
+
+/* ── Main content — flex:1, margin-left synced via --sw ── */
+.wrap{
+  position:relative; z-index:1;
+  margin-left:var(--sw);
+  flex:1; min-width:0;
+  width:calc(100vw - var(--sw));
+  height:100%;                   /* FIX: เต็ม height ของ body */
+  padding:0 1.8rem 5rem;         /* คืน padding ปกติ */
+  overflow-y:auto;               /* FIX: scroll ที่ wrap แทน body */
+  overflow-x:hidden;
+  transition:margin-left .28s cubic-bezier(.22,1,.36,1), width .28s cubic-bezier(.22,1,.36,1);
+}
+body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
+/* เมื่อ dashboard active: ไม่มี padding และไม่ scroll ที่ wrap */
+.wrap:has(#view-dash.active){ padding:0; overflow:hidden; }
+
 
 /* ══ SIDEBAR ══ */
-/* Fixed left sidebar — full height */
 .topbar {
   position:fixed; left:0; top:0; bottom:0; z-index:300;
-  width:240px; flex-shrink:0;
+  width:var(--sw);            /* ← uses --sw */
+  flex-shrink:0;
   display:flex !important; flex-direction:column; align-items:stretch;
-  background:rgba(14,17,32,0.98);
+  background:var(--sidebar-bg);
   border-right:1px solid var(--border);
   box-shadow:6px 0 32px rgba(0,0,0,.45);
   overflow:hidden; overflow-y:auto;
@@ -77,13 +143,13 @@ body.sidebar-collapsed .wrap{width:100%;max-width:100%;margin-left:0;}
   margin:0; height:100vh; border-radius:0;
   transition:transform .28s cubic-bezier(.22,1,.36,1);
 }
-body.sidebar-collapsed .topbar { transform:translateX(-240px); }
+body.sidebar-collapsed .topbar { transform:translateX(calc(-1 * var(--sw))); }
 
 /* Sidebar toggle button */
 .sidebar-toggle-btn {
-  position:fixed; left:248px; top:50%; transform:translateY(-50%);
+  position:fixed; left:calc(var(--sw) + 8px); top:50%; transform:translateY(-50%);
   z-index:400; width:20px; height:48px;
-  background:rgba(14,17,32,0.98); border:1px solid var(--border2);
+  background:var(--sidebar-bg); border:1px solid var(--border2);
   border-left:none; border-radius:0 8px 8px 0;
   display:flex; align-items:center; justify-content:center;
   cursor:pointer; color:var(--text2); transition:all .28s cubic-bezier(.22,1,.36,1);
@@ -93,13 +159,8 @@ body.sidebar-collapsed .topbar { transform:translateX(-240px); }
 .sidebar-toggle-btn svg { transition:transform .28s; }
 body.sidebar-collapsed .sidebar-toggle-btn { left:8px; border-left:1px solid var(--border2); border-radius:8px; }
 body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
-body.light-mode .sidebar-toggle-btn { background:rgba(238,241,252,0.99); }
 .topbar::-webkit-scrollbar { display:none; }
 .topbar.hidden { display:flex !important; } /* sidebar always visible on desktop — mobile overrides below */
-body.light-mode .topbar {
-  background:rgba(238,241,252,0.99);
-  box-shadow:6px 0 32px rgba(26,35,64,.12);
-}
 
 /* Push wrap to the right — handled above */
 
@@ -182,7 +243,13 @@ body.light-mode .topbar {
 .view-main.active{animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both;}
 .view-sub.active{animation:slideRight .4s cubic-bezier(.22,1,.36,1) both;}
 /* view-dash uses flex (sidebar + content) */
-.view-dash.active{display:flex !important; animation:none; min-height:calc(100vh - 120px);}
+.view-dash.active{
+  display:flex !important; animation:none;
+  height:100%;            /* FIX: เต็ม wrap */
+  overflow:hidden;        /* scroll อยู่ใน panel ข้างใน */
+  padding:0 !important;   /* ไม่ต้องการ padding จาก wrap */
+  margin:-0;
+}
 .view-admin.active{animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both;}
 
 @keyframes slideDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
@@ -200,7 +267,7 @@ body.light-mode .topbar {
   display:flex; flex-direction:column;
   background:var(--bg2); border-radius:var(--radius-xl);
   border:1px solid var(--border2); overflow:hidden; box-shadow:var(--shadow-md);
-  min-height:calc(100vh - 160px);
+  flex:1; min-height:0; height:100%; /* FIX: stretch เต็ม parent */
 }
 
 /* ── Top tab bar — single unified row ── */
@@ -251,8 +318,8 @@ body.light-mode .topbar {
 .dash-settings-btn:hover { color:var(--cyan); border-color:rgba(0,212,255,.35); }
 
 /* ── Content area ── */
-.dash-content { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0; height:calc(100vh - 54px); }
-.dash-panel-view { display:none; flex-direction:column; overflow-y:auto; min-height:0; }
+.dash-content { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; min-height:0; }
+.dash-panel-view { display:none; flex:1; flex-direction:column; overflow-y:auto; min-height:0; }
 .dash-panel-view.active { display:flex; animation:fadeUp .35s cubic-bezier(.22,1,.36,1) both; }
 
 /* ── Panel header ── */
@@ -479,7 +546,7 @@ body.light-mode .topbar {
 .svc-kpi-bar-track {
   height:4px; background:rgba(255,255,255,.07); border-radius:2px; overflow:hidden;
 }
-body.light-mode .svc-kpi-bar-track { background:rgba(0,0,0,.08); }
+[data-theme="light"] .svc-kpi-bar-track { background:rgba(0,0,0,.08); }
 .svc-kpi-bar-fill { height:100%; border-radius:2px; transition:width 1.2s cubic-bezier(.22,1,.36,1); }
 .svc-kpi-bar-label { font-size:9px; color:var(--text3); margin-top:4px; font-weight:600; }
 
@@ -982,21 +1049,37 @@ body.light-mode .svc-kpi-bar-track { background:rgba(0,0,0,.08); }
   body::after { display:none; }
   .dot-grid  { display:none; }
 
-  /* ── SIDEBAR → hidden completely, bottom nav takes over ── */
+  /* ── body stays flex, sidebar slides off-screen via transform ── */
   .topbar,
-  .topbar.hidden { display:none !important; }
-  body    { display:block; }          /* cancel flex — no sidebar */
-  .wrap   {
+  .topbar.hidden {
+    transform:translateX(calc(-1 * var(--sw))) !important;  /* hidden by default on mobile */
+    transition:transform .3s cubic-bezier(.4,0,.2,1);
+  }
+  .topbar.mobile-open {
+    transform:translateX(0) !important;   /* shown when toggled */
+    box-shadow:8px 0 32px rgba(0,0,0,.55);
+  }
+
+  /* ── Main: no left margin on mobile ── */
+  body { height:auto !important; overflow:auto !important; }  /* mobile scroll ปกติ */
+  .wrap {
     margin-left:0 !important;
     width:100% !important;
     max-width:100% !important;
+    height:auto !important;
+    overflow-y:visible !important;
     box-sizing:border-box !important;
-    /* top padding small, bottom = bottom-nav height + safe area */
     padding:0.8rem .9rem calc(72px + env(safe-area-inset-bottom,0px)) .9rem !important;
   }
-  /* Dashboard view has no extra top spacing needed — topbar inside it provides it */
+  .wrap:has(#view-dash.active){ padding:0 !important; overflow:visible !important; }
+
+  /* Sidebar toggle btn: always top-left on mobile */
+  .sidebar-toggle-btn { left:8px !important; border-left:1px solid var(--border2) !important; border-radius:8px !important; }
+  body.sidebar-collapsed .sidebar-toggle-btn { left:8px; }
+
+  /* Dashboard view has no extra top spacing needed */
   #view-dash.active { padding-top:0 !important; }
-  /* Let dash-layout span full width (break out of wrap side padding) */
+  /* dash-layout spans full width */
   #view-dash .dash-layout {
     margin-left: -.9rem;
     margin-right: -.9rem;
@@ -1008,48 +1091,24 @@ body.light-mode .svc-kpi-bar-track { background:rgba(0,0,0,.08); }
   .cat-big-ico { width:54px; height:54px; border-radius:17px; }
   .cat-big-ico svg { width:28px; height:28px; }
 
-  /* ── Dashboard: sidebar hidden, full-width content ── */
+  /* ── Dashboard mobile layout ── */
   .view-dash { width:100% !important; }
-  .view-dash.active {
-    display:block !important;
-    width:100% !important;
-  }
-  /* Show dash-layout as block (not flex) on mobile so content stacks */
+  .view-dash.active { display:block !important; width:100% !important; height:auto !important; overflow:visible !important; padding:0 !important; }
   .view-dash .dash-layout {
-    display:flex !important;
-    flex-direction:column !important;
-    min-height:unset !important;
-    border-radius:0 !important;
-    border-left:none !important;
-    border-right:none !important;
+    display:flex !important; flex-direction:column !important;
+    min-height:unset !important; border-radius:0 !important;
+    border-left:none !important; border-right:none !important;
   }
-  /* Hide sidebar tab bar on mobile, show content full-width */
-  .view-dash .dash-topbar {
-    overflow-x:auto !important;
-    -webkit-overflow-scrolling:touch !important;
-  }
+  .view-dash .dash-topbar { overflow-x:auto !important; -webkit-overflow-scrolling:touch !important; }
   .view-dash .dash-content {
-    display:flex !important;
-    flex-direction:column !important;
-    width:100% !important;
-    height:auto !important;
-    overflow:visible !important;
-    min-height:unset !important;
+    display:flex !important; flex-direction:column !important;
+    width:100% !important; height:auto !important;
+    overflow:visible !important; min-height:unset !important;
   }
-  .dash-panel-view {
-    height:auto !important;
-    overflow:visible !important;
-    flex:none !important;
-    min-height:unset !important;
-  }
-  .dash-panel-view.active {
-    display:block !important;
-  }
-  .dp-body {
-    height:auto !important;
-    overflow:visible !important;
-    flex:none !important;
-  }
+  .dash-panel-view { height:auto !important; overflow:visible !important; flex:none !important; min-height:unset !important; }
+  .dash-panel-view.active { display:block !important; }
+  .dp-body { height:auto !important; overflow:visible !important; flex:none !important; }
+
   /* Fix chart canvas heights on mobile */
   .dp-chart-wrap { height:180px !important; }
   .dp-chart-wrap.tall { height:200px !important; }
@@ -1084,16 +1143,11 @@ body.light-mode .svc-kpi-bar-track { background:rgba(0,0,0,.08); }
   display:none;
   position:fixed; bottom:0; left:0; right:0; z-index:500;
   padding:0;
-  background: rgba(15,18,34,0.97);
+  background: var(--bottom-nav-bg);
   backdrop-filter:blur(28px) saturate(1.6);
   -webkit-backdrop-filter:blur(28px) saturate(1.6);
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid var(--border);
   box-shadow: 0 -1px 0 rgba(255,255,255,.04) inset, 0 -20px 50px rgba(0,0,0,.55);
-}
-body.light-mode .bottom-nav {
-  background:rgba(238,241,252,0.97);
-  border-top:1px solid rgba(0,0,0,0.09);
-  box-shadow:0 -8px 30px rgba(26,35,64,.12);
 }
 
 /* subtle top shimmer line */
@@ -1564,6 +1618,9 @@ body.light-mode .bottom-nav {
 
 <div class="wrap">
 
+<!-- MOBILE SIDEBAR OVERLAY (tap to close) -->
+<div id="sb-ov" onclick="closeMobileSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:299;opacity:0;pointer-events:none;transition:opacity .3s;"></div>
+
 <!-- BOTTOM NAV (mobile only) -->
 <nav class="bottom-nav" id="bottom-nav">
   <!-- Default nav: 3 tabs -->
@@ -1672,10 +1729,15 @@ body.light-mode .bottom-nav {
       <div class="clock-t" id="ct">00:00:00</div>
       <div class="clock-d" id="cd">—</div>
     </div>
-    <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="เปลี่ยนธีม" style="width:100%;border-radius:var(--radius-md);justify-content:flex-start;gap:10px;padding:.6rem .8rem;font-size:12px;font-family:Kanit;font-weight:600">
-      <span id="theme-icon">🌙</span>
-      <span id="theme-label">โหมดกลางคืน</span>
-    </button>
+    <!-- Theme toggle switch -->
+    <div onclick="toggleTheme()" title="เปลี่ยนธีม" style="display:flex;align-items:center;gap:10px;width:100%;padding:.6rem .8rem;border-radius:var(--radius-md);cursor:pointer;transition:background .18s;border:none;background:transparent;" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='transparent'">
+      <span id="theme-icon" style="font-size:15px;flex-shrink:0;">🌙</span>
+      <span id="theme-label" style="font-family:Kanit;font-size:12px;font-weight:600;color:var(--text2);flex:1;">โหมดกลางคืน</span>
+      <!-- Toggle switch -->
+      <div id="theme-switch-track" style="position:relative;width:36px;height:20px;border-radius:10px;background:var(--surface2);border:1.5px solid var(--border2);flex-shrink:0;transition:background .22s,border-color .22s;">
+        <div id="theme-switch-thumb" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--text3);transition:transform .22s,background .22s;"></div>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -1792,88 +1854,82 @@ body.light-mode .bottom-nav {
     <div class="dash-content">
 
       <!-- ระบบแจ้งเตือน Notification System -->
-      <div class="dash-panel-view active" id="panel-overview" style="display:flex;flex-direction:column;height:calc(100vh - 54px);overflow:hidden;">
+      <!-- ══ ระบบแจ้งเตือน — SLIDESHOW (panel-overview only) ══ -->
+      <div class="dash-panel-view active" id="panel-overview" style="overflow:hidden;">
 
-        <!-- ── Slideshow Header ── -->
-        <div style="display:flex;align-items:center;gap:10px;padding:.55rem 1.2rem;border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(22,25,45,0.80);">
+        <!-- Slideshow Control Bar -->
+        <div id="ss-bar" style="display:flex;align-items:center;gap:8px;padding:.5rem 1.1rem;border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(20,23,40,.97);flex-wrap:wrap;">
+
           <!-- Title -->
-          <div style="font-family:Kanit;font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px;">
-            🔔 <span id="slide-title-text">ระบบแจ้งเตือน LINE</span>
+          <span id="ss-title" style="font-family:Kanit;font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;">🔔 ระบบแจ้งเตือน LINE</span>
+
+          <!-- Tab buttons -->
+          <div style="display:flex;gap:5px;flex-shrink:0;">
+            <button onclick="ssGo(0)" id="ss-tab-0" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid transparent;background:linear-gradient(135deg,#4F7EFF,#9B59FF);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(79,126,255,.35);">🔔 LINE Notify</button>
+            <button onclick="ssGo(1)" id="ss-tab-1" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;">📚 ห้องสมุด</button>
+            <button onclick="ssGo(2)" id="ss-tab-2" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;">🚗 จอดรถ</button>
           </div>
 
-          <!-- Slide dots -->
-          <div style="display:flex;gap:6px;margin-left:.6rem;" id="slide-dots">
-            <button onclick="goSlide(0)" class="slide-dot active" id="dot-0" title="LINE Notify"></button>
-            <button onclick="goSlide(1)" class="slide-dot" id="dot-1" title="ปฏิทินจองห้องสมุด"></button>
-            <button onclick="goSlide(2)" class="slide-dot" id="dot-2" title="ปฏิทินจองจอดรถ"></button>
+          <!-- Dots -->
+          <div style="display:flex;gap:5px;align-items:center;flex-shrink:0;">
+            <div id="ss-dot-0" style="width:20px;height:8px;border-radius:4px;background:var(--cyan);box-shadow:0 0 6px var(--cyan);transition:all .25s;"></div>
+            <div id="ss-dot-1" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .25s;cursor:pointer;" onclick="ssGo(1)"></div>
+            <div id="ss-dot-2" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .25s;cursor:pointer;" onclick="ssGo(2)"></div>
           </div>
 
-          <!-- Slide labels -->
-          <div style="display:flex;gap:6px;margin-left:.2rem;">
-            <button onclick="goSlide(0)" class="slide-tab-btn active" id="tab-0">🔔 LINE Notify</button>
-            <button onclick="goSlide(1)" class="slide-tab-btn" id="tab-1">📚 ห้องสมุด</button>
-            <button onclick="goSlide(2)" class="slide-tab-btn" id="tab-2">🚗 จอดรถ</button>
-          </div>
+          <div style="flex:1;min-width:8px;"></div>
 
-          <div style="flex:1"></div>
-
-          <!-- Auto-play indicator -->
-          <div style="display:flex;align-items:center;gap:7px;">
-            <div style="position:relative;width:28px;height:28px;">
-              <svg width="28" height="28" style="transform:rotate(-90deg)">
-                <circle cx="14" cy="14" r="11" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="2.5"/>
-                <circle id="slide-progress-ring" cx="14" cy="14" r="11" fill="none" stroke="var(--cyan)" stroke-width="2.5"
-                  stroke-dasharray="69.1" stroke-dashoffset="0" style="transition:stroke-dashoffset .1s linear;"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
-                <span id="slide-countdown" style="font-family:Kanit;font-size:8px;font-weight:700;color:var(--cyan);">10</span>
-              </div>
+          <!-- Countdown ring -->
+          <div style="position:relative;width:26px;height:26px;flex-shrink:0;">
+            <svg width="26" height="26" style="transform:rotate(-90deg);">
+              <circle cx="13" cy="13" r="10" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="2.5"/>
+              <circle id="ss-ring" cx="13" cy="13" r="10" fill="none" stroke="var(--cyan)" stroke-width="2.5"
+                stroke-dasharray="62.8" stroke-dashoffset="0" style="transition:stroke-dashoffset .12s linear;"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+              <span id="ss-num" style="font-family:Kanit;font-size:7.5px;font-weight:800;color:var(--cyan);">10</span>
             </div>
-            <button id="slide-play-btn" onclick="toggleSlidePlay()" style="display:flex;align-items:center;gap:5px;font-family:Kanit;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;border:1.5px solid rgba(0,212,255,.30);background:rgba(0,212,255,.07);color:var(--cyan);cursor:pointer;transition:all .18s;">
-              <svg id="slide-play-icon" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-              <span id="slide-play-label">หยุด</span>
-            </button>
-            <!-- Prev / Next -->
-            <button onclick="prevSlide()" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <button onclick="nextSlide()" style="width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <!-- Open in new tab -->
-            <a id="slide-open-link" href="https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/" target="_blank" style="font-size:10px;color:var(--cyan);text-decoration:none;font-family:Kanit;font-weight:600;padding:4px 10px;border:1.5px solid rgba(0,212,255,.3);border-radius:20px;background:rgba(0,212,255,.07);white-space:nowrap;">เปิดใหม่ ↗</a>
           </div>
+
+          <!-- Play/Pause -->
+          <button id="ss-playbtn" onclick="ssTogglePlay()" style="display:flex;align-items:center;gap:4px;font-family:Kanit;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1.5px solid rgba(0,212,255,.3);background:rgba(0,212,255,.07);color:var(--cyan);cursor:pointer;white-space:nowrap;flex-shrink:0;">
+            <svg id="ss-playico" width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            <span id="ss-playlbl">หยุด</span>
+          </button>
+
+          <!-- Prev / Next -->
+          <button onclick="ssPrev()" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button onclick="ssNext()" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <!-- Open in new tab -->
+          <a id="ss-openlink" href="https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/" target="_blank" style="font-size:10px;color:var(--cyan);text-decoration:none;font-family:Kanit;font-weight:700;padding:3px 10px;border:1.5px solid rgba(0,212,255,.3);border-radius:20px;background:rgba(0,212,255,.07);white-space:nowrap;flex-shrink:0;">เปิดใหม่ ↗</a>
         </div>
 
-        <!-- ── Slide Frames ── -->
-        <div style="flex:1;position:relative;overflow:hidden;min-height:0;">
+        <!-- Slide Frames — position:absolute inside a relative container -->
+        <div style="position:relative;flex:1;overflow:hidden;min-height:0;">
 
-          <!-- Slide 0: LINE Notify -->
-          <div class="slide-frame active" id="slide-0" style="position:absolute;inset:0;background:var(--bg2);">
+          <div id="ss-slide-0" style="position:absolute;inset:0;display:block;">
             <iframe src="https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/"
-              style="width:100%;height:100%;border:none;display:block;"
-              title="LINE Maintenance Notification"
-            ></iframe>
+              style="width:100%;height:100%;border:none;display:block;" title="LINE Notification"></iframe>
           </div>
 
-          <!-- Slide 1: Library -->
-          <div class="slide-frame" id="slide-1" style="position:absolute;inset:0;background:var(--bg2);">
+          <div id="ss-slide-1" style="position:absolute;inset:0;display:none;">
             <iframe src="https://chaiwatsuthacheewa-creator.github.io/NTL-Library-Room/"
-              style="width:100%;height:100%;border:none;display:block;"
-              title="Library Room Booking"
-            ></iframe>
+              style="width:100%;height:100%;border:none;display:block;" title="Library Booking"></iframe>
           </div>
 
-          <!-- Slide 2: Car Park -->
-          <div class="slide-frame" id="slide-2" style="position:absolute;inset:0;background:var(--bg2);">
+          <div id="ss-slide-2" style="position:absolute;inset:0;display:none;">
             <iframe src="https://add00917-hue.github.io/carpark/"
-              style="width:100%;height:100%;border:none;display:block;"
-              title="Car Park Booking"
-            ></iframe>
+              style="width:100%;height:100%;border:none;display:block;" title="Car Park Booking"></iframe>
           </div>
 
         </div>
       </div>
+      <!-- ══ END SLIDESHOW ══ -->
 
       <!-- SERVICE (CM PM SR) -->
       <div class="dash-panel-view" id="panel-cmpmsr">
@@ -2556,121 +2612,34 @@ body.light-mode .bottom-nav {
 /* ══════════════════════════════
    SIDEBAR TOGGLE
 ══════════════════════════════ */
+const MOBILE_BP = 768;
+
+function isMobile(){ return window.innerWidth <= MOBILE_BP; }
+
 function toggleSidebar(){
-  document.body.classList.toggle('sidebar-collapsed');
-  setTimeout(()=>{ resizeAllCharts && resizeAllCharts(); }, 300);
+  if(isMobile()){
+    openMobileSidebar();
+  } else {
+    document.body.classList.toggle('sidebar-collapsed');
+    setTimeout(()=>{ resizeAllCharts && resizeAllCharts(); }, 300);
+  }
 }
 
-/* ══════════════════════════════
-   SLIDESHOW — ระบบแจ้งเตือน
-   • สลับอัตโนมัติทุก AUTO_INTERVAL วิ
-   • กดปุ่ม reset timer → ถ้าไม่กดอีก IDLE_RESET วิ จะ autoplay ต่อ
-══════════════════════════════ */
-(function(){
-  const AUTO_INTERVAL = 15;   // วินาทีระหว่าง slide
-  const IDLE_RESET    = 15;   // วินาทีที่ไม่กดแล้ว resume autoplay
+function openMobileSidebar(){
+  const sb = document.querySelector('.topbar');
+  const ov = document.getElementById('sb-ov');
+  if(!sb) return;
+  sb.classList.add('mobile-open');
+  if(ov){ ov.style.display='block'; ov.style.pointerEvents='all'; requestAnimationFrame(()=>{ ov.style.opacity='1'; }); }
+}
 
-  const SLIDES = [
-    { id:'slide-0', tabId:'tab-0', dotId:'dot-0', label:'🔔 ระบบแจ้งเตือน LINE',   link:'https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/' },
-    { id:'slide-1', tabId:'tab-1', dotId:'dot-1', label:'📚 ปฏิทินจองห้องสมุด',    link:'https://chaiwatsuthacheewa-creator.github.io/NTL-Library-Room/' },
-    { id:'slide-2', tabId:'tab-2', dotId:'dot-2', label:'🚗 ปฏิทินจองจอดรถ',       link:'https://add00917-hue.github.io/carpark/' },
-  ];
-
-  let current   = 0;
-  let isPlaying = true;
-  let countdown = AUTO_INTERVAL;
-  let tickTimer = null;
-  let idleTimer = null;
-  const CIRCUMFERENCE = 2 * Math.PI * 11; // r=11
-
-  function showSlide(idx){
-    current = (idx + SLIDES.length) % SLIDES.length;
-    SLIDES.forEach((s, i) => {
-      const el  = document.getElementById(s.id);
-      const tab = document.getElementById(s.tabId);
-      const dot = document.getElementById(s.dotId);
-      if(el)  el.classList.toggle('active', i === current);
-      if(tab) tab.classList.toggle('active', i === current);
-      if(dot) dot.classList.toggle('active', i === current);
-    });
-    const titleEl = document.getElementById('slide-title-text');
-    const linkEl  = document.getElementById('slide-open-link');
-    if(titleEl) titleEl.textContent = SLIDES[current].label;
-    if(linkEl)  linkEl.href = SLIDES[current].link;
-  }
-
-  function updateRing(){
-    const ring = document.getElementById('slide-progress-ring');
-    const num  = document.getElementById('slide-countdown');
-    if(!ring || !num) return;
-    const pct = countdown / AUTO_INTERVAL;
-    ring.style.strokeDashoffset = CIRCUMFERENCE * (1 - pct);
-    num.textContent = Math.ceil(countdown);
-  }
-
-  function startTick(){
-    clearInterval(tickTimer);
-    countdown = AUTO_INTERVAL;
-    updateRing();
-    tickTimer = setInterval(()=>{
-      if(!isPlaying) return;
-      countdown -= 0.1;
-      updateRing();
-      if(countdown <= 0){
-        countdown = AUTO_INTERVAL;
-        showSlide(current + 1);
-      }
-    }, 100);
-  }
-
-  function pauseAutoplay(){
-    isPlaying = false;
-    const btn = document.getElementById('slide-play-btn');
-    const ico = document.getElementById('slide-play-icon');
-    const lbl = document.getElementById('slide-play-label');
-    if(btn){ btn.style.borderColor='rgba(255,209,102,.4)'; btn.style.background='rgba(255,209,102,.08)'; btn.style.color='var(--yellow)'; }
-    if(ico) ico.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
-    if(lbl) lbl.textContent = 'เล่น';
-  }
-
-  function resumeAutoplay(){
-    isPlaying = true;
-    countdown = AUTO_INTERVAL;
-    const btn = document.getElementById('slide-play-btn');
-    const ico = document.getElementById('slide-play-icon');
-    const lbl = document.getElementById('slide-play-label');
-    if(btn){ btn.style.borderColor='rgba(0,212,255,.30)'; btn.style.background='rgba(0,212,255,.07)'; btn.style.color='var(--cyan)'; }
-    if(ico) ico.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
-    if(lbl) lbl.textContent = 'หยุด';
-  }
-
-  function userInteracted(){
-    // หยุด autoplay ชั่วคราว แล้ว resume หลัง IDLE_RESET วิ
-    if(isPlaying) pauseAutoplay();
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(()=>{ resumeAutoplay(); countdown = AUTO_INTERVAL; }, IDLE_RESET * 1000);
-  }
-
-  // expose to global
-  window.goSlide = function(idx){ showSlide(idx); userInteracted(); };
-  window.nextSlide = function(){ showSlide(current + 1); userInteracted(); };
-  window.prevSlide = function(){ showSlide(current - 1); userInteracted(); };
-  window.toggleSlidePlay = function(){
-    if(isPlaying){ pauseAutoplay(); clearTimeout(idleTimer); }
-    else { resumeAutoplay(); }
-  };
-
-  // Init after DOM ready
-  document.addEventListener('DOMContentLoaded', ()=>{
-    showSlide(0);
-    startTick();
-  });
-  window.addEventListener('load', ()=>{
-    showSlide(0);
-    startTick();
-  });
-})();
-
+function closeMobileSidebar(){
+  const sb = document.querySelector('.topbar');
+  const ov = document.getElementById('sb-ov');
+  if(!sb) return;
+  sb.classList.remove('mobile-open');
+  if(ov){ ov.style.opacity='0'; ov.style.pointerEvents='none'; setTimeout(()=>{ ov.style.display='none'; }, 300); }
+}
 
 /* ══════════════════════════════
    CONSTANTS & DATA
@@ -2808,12 +2777,23 @@ function switchTab(tab){
    DASHBOARD v2 — Google Sheets Integration
 ══════════════════════════════════════ */
 const SHEET_STORAGE_KEY = 'gnr3_sheets_v2';
-const CHART_DEFAULTS = {
-  responsive:true,
-  maintainAspectRatio:false,
-  plugins:{legend:{labels:{color:'#8B93C4',font:{family:'Kanit',size:11}}}},
-  scales:{x:{ticks:{color:'#4A5180',font:{family:'Kanit',size:10}},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#4A5180',font:{family:'Kanit',size:10}},grid:{color:'rgba(255,255,255,0.05)'}}}
-};
+
+/* Chart colors auto-adapt to current theme */
+function getChartDefaults(){
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const tickClr  = isLight ? 'rgba(26,35,64,0.55)'   : '#4A5180';
+  const legClr   = isLight ? 'rgba(26,35,64,0.80)'   : '#8B93C4';
+  const gridClr  = isLight ? 'rgba(0,0,0,0.06)'       : 'rgba(255,255,255,0.05)';
+  return {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:legClr,font:{family:'Kanit',size:11}}}},
+    scales:{
+      x:{ticks:{color:tickClr,font:{family:'Kanit',size:10}},grid:{color:gridClr}},
+      y:{ticks:{color:tickClr,font:{family:'Kanit',size:10}},grid:{color:gridClr}}
+    }
+  };
+}
+const CHART_DEFAULTS = getChartDefaults(); /* fallback constant — charts use getChartDefaults() live */
 let SHEET_CONFIGS = {};
 let DASH_CHARTS = {};
 let currentDashPanel = 'cmpmsr';
@@ -2844,7 +2824,7 @@ function switchDashPanel(panel, btn){
   document.querySelectorAll('.dash-panel-view').forEach(p=>p.classList.remove('active'));
   const pEl = document.getElementById('panel-'+panel);
   if(pEl){ void pEl.offsetWidth; pEl.classList.add('active'); }
-  if(panel==='overview') { /* slideshow — no chart init needed */ }
+  if(panel==='overview') { /* slideshow จัดการตัวเอง */ }
   else if(panel==='misc') setTimeout(()=>{ initMiscCharts(); resizeAllCharts(); }, 120);
   else setTimeout(()=>{ initAllCharts(); resizeAllCharts(); }, 120);
 }
@@ -3004,10 +2984,10 @@ function updateCMPMSRCharts(cm,pm,sr,data){
     {label:'CM',data:[cm,cm-1,cm+2,cm-2,cm+1,cm],backgroundColor:'rgba(255,140,66,0.7)',borderRadius:6},
     {label:'PM',data:[pm,pm+1,pm,pm+2,pm-1,pm],backgroundColor:'rgba(79,126,255,0.7)',borderRadius:6},
     {label:'SR',data:[sr,sr-1,sr+1,sr,sr+2,sr-1],backgroundColor:'rgba(155,89,255,0.7)',borderRadius:6},
-  ]},options:{...CHART_DEFAULTS,plugins:{...CHART_DEFAULTS.plugins,legend:{...CHART_DEFAULTS.plugins.legend}}}});
+  ]},options:{...getChartDefaults(),plugins:{...getChartDefaults().plugins,legend:{...getChartDefaults().plugins.legend}}}});
   destroyChart('cmpmsr-donut');
   const ctx2 = document.getElementById('chart-cmpmsr-donut');
-  if(ctx2) DASH_CHARTS['cmpmsr-donut'] = new Chart(ctx2,{type:'doughnut',data:{labels:['CM','PM','SR'],datasets:[{data:[cm,pm,sr],backgroundColor:['rgba(255,140,66,0.8)','rgba(79,126,255,0.8)','rgba(155,89,255,0.8)'],borderWidth:0}]},options:{plugins:{legend:{...CHART_DEFAULTS.plugins.legend,position:'bottom'}},cutout:'65%'}});
+  if(ctx2) DASH_CHARTS['cmpmsr-donut'] = new Chart(ctx2,{type:'doughnut',data:{labels:['CM','PM','SR'],datasets:[{data:[cm,pm,sr],backgroundColor:['rgba(255,140,66,0.8)','rgba(79,126,255,0.8)','rgba(155,89,255,0.8)'],borderWidth:0}]},options:{plugins:{legend:{...getChartDefaults().plugins.legend,position:'bottom'}},cutout:'65%'}});
 }
 
 /* ── Render Utility ── */
@@ -3028,11 +3008,11 @@ function renderUtility(data){
   if(ctx1) DASH_CHARTS['utility-trend']=new Chart(ctx1,{type:'bar',data:{labels:months,datasets:[
     {label:'ค่าไฟฟ้า',data:months.map((_,i)=>totalElec*(0.85+i*.06)),backgroundColor:'rgba(255,209,102,0.7)',borderRadius:5},
     {label:'ค่าน้ำ',data:months.map((_,i)=>totalWater*(0.9+i*.03)),backgroundColor:'rgba(0,212,255,0.7)',borderRadius:5},
-  ]},options:{...CHART_DEFAULTS}});
+  ]},options:{...getChartDefaults()}});
   const blds=['Ari Hills','KSL','ESV','Training','สาขา'];
   destroyChart('utility-bld');
   const ctx2=document.getElementById('chart-utility-bld');
-  if(ctx2) DASH_CHARTS['utility-bld']=new Chart(ctx2,{type:'doughnut',data:{labels:blds,datasets:[{data:blds.map((_,i)=>(totalElec+totalWater)*([.35,.22,.18,.12,.13][i])),backgroundColor:['rgba(255,209,102,0.8)','rgba(79,126,255,0.8)','rgba(155,89,255,0.8)','rgba(6,214,160,0.8)','rgba(255,77,141,0.8)'],borderWidth:0}]},options:{plugins:{legend:{...CHART_DEFAULTS.plugins.legend,position:'bottom'}},cutout:'55%'}});
+  if(ctx2) DASH_CHARTS['utility-bld']=new Chart(ctx2,{type:'doughnut',data:{labels:blds,datasets:[{data:blds.map((_,i)=>(totalElec+totalWater)*([.35,.22,.18,.12,.13][i])),backgroundColor:['rgba(255,209,102,0.8)','rgba(79,126,255,0.8)','rgba(155,89,255,0.8)','rgba(6,214,160,0.8)','rgba(255,77,141,0.8)'],borderWidth:0}]},options:{plugins:{legend:{...getChartDefaults().plugins.legend,position:'bottom'}},cutout:'55%'}});
   const tbody=document.getElementById('tbody-utility');
   tbody.innerHTML=data.slice(0,15).map(r=>`<tr><td>${r['เดือน']||r['Month']||'-'}</td><td>${r['อาคาร']||r['Building']||'-'}</td><td>${fmtNum(parseNum(r['ค่าไฟฟ้า']||r['Electricity']))}</td><td>${fmtNum(parseNum(r['kWh']||r['Unit']))}</td><td>${fmtNum(parseNum(r['ค่าน้ำ']||r['Water']))}</td><td>${fmtNum(parseNum(r['หน่วยน้ำ']||'0'))}</td><td><strong>${fmtNum(parseNum(r['ค่าไฟฟ้า']||'0')+parseNum(r['ค่าน้ำ']||'0'))}</strong></td></tr>`).join('');
 }
@@ -3049,10 +3029,10 @@ function renderSupply(data){
   destroyChart('supply-monthly');
   const ctx1=document.getElementById('chart-supply-monthly');
   const colors=['rgba(155,89,255,0.7)','rgba(255,140,66,0.7)','rgba(6,214,160,0.7)','rgba(79,126,255,0.7)','rgba(255,77,141,0.7)','rgba(255,209,102,0.7)'];
-  if(ctx1) DASH_CHARTS['supply-monthly']=new Chart(ctx1,{type:'bar',data:{labels:months,datasets:catLabels.map((cat,ci)=>({label:cat,data:months.map(()=>Math.round(totalCost/catLabels.length*(0.7+Math.random()*.6))),backgroundColor:colors[ci%colors.length],borderRadius:5}))},options:{...CHART_DEFAULTS,scales:{...CHART_DEFAULTS.scales,x:{...CHART_DEFAULTS.scales.x,stacked:true},y:{...CHART_DEFAULTS.scales.y,stacked:true}}}});
+  if(ctx1) DASH_CHARTS['supply-monthly']=new Chart(ctx1,{type:'bar',data:{labels:months,datasets:catLabels.map((cat,ci)=>({label:cat,data:months.map(()=>Math.round(totalCost/catLabels.length*(0.7+Math.random()*.6))),backgroundColor:colors[ci%colors.length],borderRadius:5}))},options:{...getChartDefaults(),scales:{...getChartDefaults().scales,x:{...getChartDefaults().scales.x,stacked:true},y:{...getChartDefaults().scales.y,stacked:true}}}});
   destroyChart('supply-cat');
   const ctx2=document.getElementById('chart-supply-cat');
-  if(ctx2) DASH_CHARTS['supply-cat']=new Chart(ctx2,{type:'doughnut',data:{labels:catLabels,datasets:[{data:catLabels.map((_,i)=>totalCost*([.3,.22,.18,.12,.1,.08][i]||.1)),backgroundColor:colors,borderWidth:0}]},options:{plugins:{legend:{...CHART_DEFAULTS.plugins.legend,position:'bottom'}},cutout:'55%'}});
+  if(ctx2) DASH_CHARTS['supply-cat']=new Chart(ctx2,{type:'doughnut',data:{labels:catLabels,datasets:[{data:catLabels.map((_,i)=>totalCost*([.3,.22,.18,.12,.1,.08][i]||.1)),backgroundColor:colors,borderWidth:0}]},options:{plugins:{legend:{...getChartDefaults().plugins.legend,position:'bottom'}},cutout:'55%'}});
   const tbody=document.getElementById('tbody-supply');
   tbody.innerHTML=data.slice(0,15).map(r=>{
     const stk=parseNum(r['สต็อก']||r['Stock']||'0'),rop=parseNum(r['จุดสั่งซื้อ']||r['ReorderPoint']||'5');
@@ -3071,7 +3051,7 @@ function renderProject(data){
   const bldCols=['rgba(79,126,255,0.75)','rgba(155,89,255,0.75)','rgba(6,214,160,0.75)','rgba(255,140,66,0.75)'];
   destroyChart('project-bld');
   const ctx1=document.getElementById('chart-project-bld');
-  if(ctx1) DASH_CHARTS['project-bld']=new Chart(ctx1,{type:'bar',data:{labels:['กำลังดำเนินการ','เสร็จแล้ว','รอดำเนินการ'],datasets:blds.map((b,bi)=>({label:b,data:[Math.round(active*(0.4-bi*.08)),Math.round(done*(0.4-bi*.08)),Math.round(wait*(0.4-bi*.08))],backgroundColor:bldCols[bi],borderRadius:5}))},options:{...CHART_DEFAULTS}});
+  if(ctx1) DASH_CHARTS['project-bld']=new Chart(ctx1,{type:'bar',data:{labels:['กำลังดำเนินการ','เสร็จแล้ว','รอดำเนินการ'],datasets:blds.map((b,bi)=>({label:b,data:[Math.round(active*(0.4-bi*.08)),Math.round(done*(0.4-bi*.08)),Math.round(wait*(0.4-bi*.08))],backgroundColor:bldCols[bi],borderRadius:5}))},options:{...getChartDefaults()}});
   const prgWrap=document.getElementById('proj-progress-list');
   prgWrap.innerHTML=blds.map((b,bi)=>{
     const pct=Math.round((30+bi*15+Math.random()*20));
@@ -3092,10 +3072,10 @@ function renderOTAIR(data){
   const bldCols=['rgba(79,126,255,0.75)','rgba(155,89,255,0.75)','rgba(6,214,160,0.75)'];
   destroyChart('otair-monthly');
   const ctx1=document.getElementById('chart-otair-monthly');
-  if(ctx1) DASH_CHARTS['otair-monthly']=new Chart(ctx1,{type:'line',data:{labels:months,datasets:blds.map((b,bi)=>({label:b,data:months.map(()=>Math.round(data.length/3*(0.6+Math.random()*.8))),borderColor:bldCols[bi].replace('0.75','1'),backgroundColor:bldCols[bi].replace('0.75','0.15'),fill:true,tension:.4,pointRadius:4}))},options:{...CHART_DEFAULTS}});
+  if(ctx1) DASH_CHARTS['otair-monthly']=new Chart(ctx1,{type:'line',data:{labels:months,datasets:blds.map((b,bi)=>({label:b,data:months.map(()=>Math.round(data.length/3*(0.6+Math.random()*.8))),borderColor:bldCols[bi].replace('0.75','1'),backgroundColor:bldCols[bi].replace('0.75','0.15'),fill:true,tension:.4,pointRadius:4}))},options:{...getChartDefaults()}});
   destroyChart('otair-bld');
   const ctx2=document.getElementById('chart-otair-bld');
-  if(ctx2) DASH_CHARTS['otair-bld']=new Chart(ctx2,{type:'doughnut',data:{labels:blds,datasets:[{data:[0.42,0.33,0.25].map(f=>Math.round(totalHrs*f)),backgroundColor:bldCols,borderWidth:0}]},options:{plugins:{legend:{...CHART_DEFAULTS.plugins.legend,position:'bottom'}},cutout:'60%'}});
+  if(ctx2) DASH_CHARTS['otair-bld']=new Chart(ctx2,{type:'doughnut',data:{labels:blds,datasets:[{data:[0.42,0.33,0.25].map(f=>Math.round(totalHrs*f)),backgroundColor:bldCols,borderWidth:0}]},options:{plugins:{legend:{...getChartDefaults().plugins.legend,position:'bottom'}},cutout:'60%'}});
   const tbody=document.getElementById('tbody-otair');
   tbody.innerHTML=data.slice(0,15).map(r=>`<tr><td>${r['วันที่']||r['Date']||'-'}</td><td>${r['อาคาร']||r['Building']||'-'}</td><td>${r['ชั้น/โซน']||r['Zone']||'-'}</td><td>${r['เหตุผล']||r['Reason']||'-'}</td><td>${r['ชั่วโมง']||r['Hours']||'-'}</td><td>${r['ผู้ขอ']||r['Requester']||'-'}</td><td><span class="dp-pill ${getStatusCls(r['สถานะ']||r['Status'])}">${r['สถานะ']||r['Status']||'-'}</span></td></tr>`).join('');
 }
@@ -3116,7 +3096,7 @@ function renderOverview(){
     {label:'CM',data:[12,8,15,10,14,11],backgroundColor:'rgba(255,140,66,0.75)',borderRadius:6},
     {label:'PM',data:[20,22,18,25,21,23],backgroundColor:'rgba(79,126,255,0.75)',borderRadius:6},
     {label:'SR',data:[5,7,4,8,6,9],backgroundColor:'rgba(155,89,255,0.75)',borderRadius:6},
-  ]},options:{...CHART_DEFAULTS}});
+  ]},options:{...getChartDefaults()}});
   destroyChart('overview-donut');
   const c2=document.getElementById('chart-cmpmsr-donut')||document.getElementById('chart-overview-donut');
   if(document.getElementById('chart-overview-donut'))
@@ -3127,7 +3107,7 @@ function renderOverview(){
     {label:'Ari Hills',data:[18,22,15,25,20,28],borderColor:'rgba(79,126,255,1)',backgroundColor:'rgba(79,126,255,0.12)',fill:true,tension:.4,pointRadius:4},
     {label:'KSL',data:[12,15,10,18,14,20],borderColor:'rgba(155,89,255,1)',backgroundColor:'rgba(155,89,255,0.12)',fill:true,tension:.4,pointRadius:4},
     {label:'ESV',data:[8,10,7,12,9,14],borderColor:'rgba(6,214,160,1)',backgroundColor:'rgba(6,214,160,0.12)',fill:true,tension:.4,pointRadius:4},
-  ]},options:{...CHART_DEFAULTS}});
+  ]},options:{...getChartDefaults()}});
   const ovProg=document.getElementById('ov-progress-list');
   if(ovProg) ovProg.innerHTML=['Ari Hills','KSL','ESV','Training Center'].map((b,bi)=>{
     const pct=[72,58,65,45][bi]; const cols=['#4F7EFF','#9B59FF','#06D6A0','#FF8C42'];
@@ -3157,32 +3137,32 @@ function initAllCharts(){
   // Utility demo
   if(!SHEET_CONFIGS.utility){ destroyChart('utility-trend'); destroyChart('utility-bld');
     const c3=document.getElementById('chart-utility-trend');
-    if(c3) DASH_CHARTS['utility-trend']=new Chart(c3,{type:'bar',data:{labels:months,datasets:[{label:'ค่าไฟฟ้า',data:[85000,92000,78000,95000,88000,102000],backgroundColor:'rgba(255,209,102,0.7)',borderRadius:5},{label:'ค่าน้ำ',data:[12000,11500,13000,10800,12500,11000],backgroundColor:'rgba(0,212,255,0.7)',borderRadius:5}]},options:{...CHART_DEFAULTS}});
+    if(c3) DASH_CHARTS['utility-trend']=new Chart(c3,{type:'bar',data:{labels:months,datasets:[{label:'ค่าไฟฟ้า',data:[85000,92000,78000,95000,88000,102000],backgroundColor:'rgba(255,209,102,0.7)',borderRadius:5},{label:'ค่าน้ำ',data:[12000,11500,13000,10800,12500,11000],backgroundColor:'rgba(0,212,255,0.7)',borderRadius:5}]},options:{...getChartDefaults()}});
     const c4=document.getElementById('chart-utility-bld');
-    if(c4) DASH_CHARTS['utility-bld']=new Chart(c4,{type:'doughnut',data:{labels:['Ari Hills','KSL','ESV','Training','สาขา'],datasets:[{data:[38,22,18,12,10],backgroundColor:['rgba(255,209,102,0.8)','rgba(79,126,255,0.8)','rgba(155,89,255,0.8)','rgba(6,214,160,0.8)','rgba(255,77,141,0.8)'],borderWidth:0}]},options:{plugins:{legend:{...CHART_DEFAULTS.plugins.legend,position:'bottom'}},cutout:'55%'}});
+    if(c4) DASH_CHARTS['utility-bld']=new Chart(c4,{type:'doughnut',data:{labels:['Ari Hills','KSL','ESV','Training','สาขา'],datasets:[{data:[38,22,18,12,10],backgroundColor:['rgba(255,209,102,0.8)','rgba(79,126,255,0.8)','rgba(155,89,255,0.8)','rgba(6,214,160,0.8)','rgba(255,77,141,0.8)'],borderWidth:0}]},options:{plugins:{legend:{...getChartDefaults().plugins.legend,position:'bottom'}},cutout:'55%'}});
   }
   // Supply demo
   if(!SHEET_CONFIGS.supply){ destroyChart('supply-monthly'); destroyChart('supply-cat');
     const cats=['ทำความสะอาด','เครื่องเขียน','อาหาร/เครื่องดื่ม','อุปกรณ์ซ่อมบำรุง'];
     const colors=['rgba(155,89,255,0.7)','rgba(255,140,66,0.7)','rgba(6,214,160,0.7)','rgba(79,126,255,0.7)'];
     const c5=document.getElementById('chart-supply-monthly');
-    if(c5) DASH_CHARTS['supply-monthly']=new Chart(c5,{type:'bar',data:{labels:months,datasets:cats.map((cat,ci)=>({label:cat,data:months.map(()=>Math.round(3000+Math.random()*5000)),backgroundColor:colors[ci],borderRadius:4}))},options:{...CHART_DEFAULTS,scales:{...CHART_DEFAULTS.scales,x:{...CHART_DEFAULTS.scales.x,stacked:true},y:{...CHART_DEFAULTS.scales.y,stacked:true}}}});
+    if(c5) DASH_CHARTS['supply-monthly']=new Chart(c5,{type:'bar',data:{labels:months,datasets:cats.map((cat,ci)=>({label:cat,data:months.map(()=>Math.round(3000+Math.random()*5000)),backgroundColor:colors[ci],borderRadius:4}))},options:{...getChartDefaults(),scales:{...getChartDefaults().scales,x:{...getChartDefaults().scales.x,stacked:true},y:{...getChartDefaults().scales.y,stacked:true}}}});
     const c6=document.getElementById('chart-supply-cat');
-    if(c6) DASH_CHARTS['supply-cat']=new Chart(c6,{type:'doughnut',data:{labels:cats,datasets:[{data:[35,25,22,18],backgroundColor:colors,borderWidth:0}]},options:{plugins:{legend:{...CHART_DEFAULTS.plugins.legend,position:'bottom'}},cutout:'55%'}});
+    if(c6) DASH_CHARTS['supply-cat']=new Chart(c6,{type:'doughnut',data:{labels:cats,datasets:[{data:[35,25,22,18],backgroundColor:colors,borderWidth:0}]},options:{plugins:{legend:{...getChartDefaults().plugins.legend,position:'bottom'}},cutout:'55%'}});
   }
   // Project demo
   if(!SHEET_CONFIGS.project){ destroyChart('project-bld');
     const pb=document.getElementById('chart-project-bld');
-    if(pb) DASH_CHARTS['project-bld']=new Chart(pb,{type:'bar',data:{labels:['กำลังดำเนินการ','เสร็จแล้ว','รอดำเนินการ'],datasets:[{label:'Ari Hills',data:[5,8,3],backgroundColor:'rgba(79,126,255,0.75)',borderRadius:5},{label:'KSL',data:[3,5,2],backgroundColor:'rgba(155,89,255,0.75)',borderRadius:5},{label:'ESV',data:[4,6,1],backgroundColor:'rgba(6,214,160,0.75)',borderRadius:5},{label:'Training',data:[2,3,2],backgroundColor:'rgba(255,140,66,0.75)',borderRadius:5}]},options:{...CHART_DEFAULTS}});
+    if(pb) DASH_CHARTS['project-bld']=new Chart(pb,{type:'bar',data:{labels:['กำลังดำเนินการ','เสร็จแล้ว','รอดำเนินการ'],datasets:[{label:'Ari Hills',data:[5,8,3],backgroundColor:'rgba(79,126,255,0.75)',borderRadius:5},{label:'KSL',data:[3,5,2],backgroundColor:'rgba(155,89,255,0.75)',borderRadius:5},{label:'ESV',data:[4,6,1],backgroundColor:'rgba(6,214,160,0.75)',borderRadius:5},{label:'Training',data:[2,3,2],backgroundColor:'rgba(255,140,66,0.75)',borderRadius:5}]},options:{...getChartDefaults()}});
     const prgWrap=document.getElementById('proj-progress-list');
     if(prgWrap) prgWrap.innerHTML=['Ari Hills','KSL','ESV','Training Center'].map((b,bi)=>{const pct=[72,58,65,45][bi];const cols=['rgba(79,126,255,1)','rgba(155,89,255,1)','rgba(6,214,160,1)','rgba(255,140,66,1)'];return `<div class="dp-prog-item"><div class="dp-prog-header"><div class="dp-prog-name">${b}</div><div class="dp-prog-pct" style="color:${cols[bi]}">${pct}%</div></div><div class="dp-prog-track"><div class="dp-prog-fill" style="width:${pct}%;background:${cols[bi]}"></div></div></div>`;}).join('');
   }
   // OT AIR demo
   if(!SHEET_CONFIGS.otair){ destroyChart('otair-monthly'); destroyChart('otair-bld');
     const co1=document.getElementById('chart-otair-monthly');
-    if(co1) DASH_CHARTS['otair-monthly']=new Chart(co1,{type:'line',data:{labels:months,datasets:[{label:'Ari Hills',data:[18,22,15,25,20,28],borderColor:'rgba(79,126,255,1)',backgroundColor:'rgba(79,126,255,0.15)',fill:true,tension:.4,pointRadius:4},{label:'KSL',data:[12,15,10,18,14,20],borderColor:'rgba(155,89,255,1)',backgroundColor:'rgba(155,89,255,0.15)',fill:true,tension:.4,pointRadius:4},{label:'ESV',data:[8,10,7,12,9,14],borderColor:'rgba(6,214,160,1)',backgroundColor:'rgba(6,214,160,0.15)',fill:true,tension:.4,pointRadius:4}]},options:{...CHART_DEFAULTS}});
+    if(co1) DASH_CHARTS['otair-monthly']=new Chart(co1,{type:'line',data:{labels:months,datasets:[{label:'Ari Hills',data:[18,22,15,25,20,28],borderColor:'rgba(79,126,255,1)',backgroundColor:'rgba(79,126,255,0.15)',fill:true,tension:.4,pointRadius:4},{label:'KSL',data:[12,15,10,18,14,20],borderColor:'rgba(155,89,255,1)',backgroundColor:'rgba(155,89,255,0.15)',fill:true,tension:.4,pointRadius:4},{label:'ESV',data:[8,10,7,12,9,14],borderColor:'rgba(6,214,160,1)',backgroundColor:'rgba(6,214,160,0.15)',fill:true,tension:.4,pointRadius:4}]},options:{...getChartDefaults()}});
     const co2=document.getElementById('chart-otair-bld');
-    if(co2) DASH_CHARTS['otair-bld']=new Chart(co2,{type:'doughnut',data:{labels:['Ari Hills','KSL','ESV'],datasets:[{data:[128,88,56],backgroundColor:['rgba(79,126,255,0.8)','rgba(155,89,255,0.8)','rgba(6,214,160,0.8)'],borderWidth:0}]},options:{plugins:{legend:{...CHART_DEFAULTS.plugins.legend,position:'bottom'}},cutout:'60%'}});
+    if(co2) DASH_CHARTS['otair-bld']=new Chart(co2,{type:'doughnut',data:{labels:['Ari Hills','KSL','ESV'],datasets:[{data:[128,88,56],backgroundColor:['rgba(79,126,255,0.8)','rgba(155,89,255,0.8)','rgba(6,214,160,0.8)'],borderWidth:0}]},options:{plugins:{legend:{...getChartDefaults().plugins.legend,position:'bottom'}},cutout:'60%'}});
   }
 }
 function destroyChart(key){if(DASH_CHARTS[key]){DASH_CHARTS[key].destroy();delete DASH_CHARTS[key];}}
@@ -3970,24 +3950,34 @@ function buildDashSummary(panel){
 
 /* ══ LIGHT / DARK MODE TOGGLE ══ */
 const THEME_KEY = 'gnr3_theme';
+function updateThemeSwitch(isLight){
+  const ico   = document.getElementById('theme-icon');
+  const lbl   = document.getElementById('theme-label');
+  const track = document.getElementById('theme-switch-track');
+  const thumb = document.getElementById('theme-switch-thumb');
+  if(ico)   ico.textContent   = isLight ? '☀️' : '🌙';
+  if(lbl)   lbl.textContent   = isLight ? 'โหมดกลางวัน' : 'โหมดกลางคืน';
+  if(track){
+    track.style.background   = isLight ? 'var(--blue)'     : 'var(--surface2)';
+    track.style.borderColor  = isLight ? 'var(--blue)'     : 'var(--border2)';
+  }
+  if(thumb){
+    thumb.style.transform    = isLight ? 'translateX(16px)' : 'translateX(0)';
+    thumb.style.background   = isLight ? '#fff'             : 'var(--text3)';
+  }
+}
 function toggleTheme(){
-  const isLight = document.body.classList.toggle('light-mode');
-  localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
-  const ico = document.getElementById('theme-icon');
-  const lbl = document.getElementById('theme-label');
-  if(ico) ico.textContent = isLight ? '☀️' : '🌙';
-  if(lbl) lbl.textContent = isLight ? 'โหมดกลางวัน' : 'โหมดกลางคืน';
+  const html = document.documentElement;
+  const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', newTheme);         /* CSS handles everything */
+  localStorage.setItem(THEME_KEY, newTheme);
+  updateThemeSwitch(newTheme === 'light');
   setTimeout(()=>{ if(typeof initAllCharts==='function') initAllCharts(); }, 100);
 }
 function initTheme(){
-  const saved = localStorage.getItem(THEME_KEY);
-  if(saved === 'light'){
-    document.body.classList.add('light-mode');
-    const ico = document.getElementById('theme-icon');
-    const lbl = document.getElementById('theme-label');
-    if(ico) ico.textContent = '☀️';
-    if(lbl) lbl.textContent = 'โหมดกลางวัน';
-  }
+  const saved = localStorage.getItem(THEME_KEY) || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  updateThemeSwitch(saved === 'light');
 }
 
 /* ══ MISC CHART INIT ══ */
@@ -3995,7 +3985,7 @@ function initMiscCharts(){
   const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'];
   destroyChart('misc-monthly');
   const c1=document.getElementById('chart-misc-monthly');
-  if(c1) DASH_CHARTS['misc-monthly']=new Chart(c1,{type:'bar',data:{labels:months,datasets:[{label:'รายการ',data:[8,12,7,15,10,13],backgroundColor:'rgba(79,126,255,0.70)',borderRadius:6}]},options:{...CHART_DEFAULTS}});
+  if(c1) DASH_CHARTS['misc-monthly']=new Chart(c1,{type:'bar',data:{labels:months,datasets:[{label:'รายการ',data:[8,12,7,15,10,13],backgroundColor:'rgba(79,126,255,0.70)',borderRadius:6}]},options:{...getChartDefaults()}});
   destroyChart('misc-cat');
   const c2=document.getElementById('chart-misc-cat');
   if(c2) DASH_CHARTS['misc-cat']=new Chart(c2,{type:'doughnut',data:{labels:['หมวด A','หมวด B','หมวด C','หมวด D'],datasets:[{data:[35,28,22,15],backgroundColor:['rgba(79,126,255,0.8)','rgba(155,89,255,0.8)','rgba(6,214,160,0.8)','rgba(255,209,102,0.8)'],borderWidth:0}]},options:{plugins:{legend:{labels:{color:'#8B93C4',font:{family:'Kanit',size:11}},position:'bottom'}},cutout:'55%'}});
@@ -4038,7 +4028,7 @@ function buildCMPMSRChart(){
   const ctx = document.getElementById('chart-cmpmsr-monthly');
   if(!ctx) return;
 
-  const isLight = document.body.classList.contains('light-mode');
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
   const lblColor = isLight ? 'rgba(26,35,64,0.85)' : 'rgba(255,255,255,0.90)';
 
   DASH_CHARTS['cmpmsr-monthly'] = new Chart(ctx, {
@@ -4052,9 +4042,9 @@ function buildCMPMSRChart(){
       ]
     },
     options:{
-      ...CHART_DEFAULTS,
+      ...getChartDefaults(),
       plugins:{
-        ...CHART_DEFAULTS.plugins,
+        ...getChartDefaults().plugins,
         legend:{ labels:{ color:'#8B93C4', font:{ family:'Kanit', size:11 } } }
       },
       animation:{ duration:600 },
@@ -4290,7 +4280,7 @@ function renderOverview(){
   destroyChart('notif-trend');
   const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'];
   const c2=document.getElementById('chart-notif-trend');
-  if(c2) DASH_CHARTS['notif-trend']=new Chart(c2,{type:'line',data:{labels:months,datasets:[{label:'แจ้งเตือน',data:[12,18,14,22,16,total],borderColor:'rgba(255,77,141,1)',backgroundColor:'rgba(255,77,141,0.12)',fill:true,tension:.4,pointRadius:3}]},options:{...CHART_DEFAULTS}});
+  if(c2) DASH_CHARTS['notif-trend']=new Chart(c2,{type:'line',data:{labels:months,datasets:[{label:'แจ้งเตือน',data:[12,18,14,22,16,total],borderColor:'rgba(255,77,141,1)',backgroundColor:'rgba(255,77,141,0.12)',fill:true,tension:.4,pointRadius:3}]},options:{...getChartDefaults()}});
 }
 
 function renderNotifFeed(){
@@ -4349,7 +4339,7 @@ function renderCMPanel(data){
   const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'];
   destroyChart('cm-monthly');
   const c1=document.getElementById('chart-cm-monthly');
-  if(c1) DASH_CHARTS['cm-monthly']=new Chart(c1,{type:'bar',data:{labels:months,datasets:[{label:'CM',data:months.map((_,i)=>Math.max(1,Math.round(total/6*(0.7+i*.1)+(Math.random()*3-1.5)))),backgroundColor:'rgba(255,140,66,0.75)',borderRadius:6}]},options:{...CHART_DEFAULTS}});
+  if(c1) DASH_CHARTS['cm-monthly']=new Chart(c1,{type:'bar',data:{labels:months,datasets:[{label:'CM',data:months.map((_,i)=>Math.max(1,Math.round(total/6*(0.7+i*.1)+(Math.random()*3-1.5)))),backgroundColor:'rgba(255,140,66,0.75)',borderRadius:6}]},options:{...getChartDefaults()}});
   destroyChart('cm-bld');
   const c2=document.getElementById('chart-cm-bld');
   const blds=['Ari Hills','KSL','ESV','Training'];
@@ -4380,7 +4370,7 @@ function renderPMPanel(data){
   const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'];
   destroyChart('pm-monthly');
   const c1=document.getElementById('chart-pm-monthly');
-  if(c1) DASH_CHARTS['pm-monthly']=new Chart(c1,{type:'bar',data:{labels:months,datasets:[{label:'เสร็จแล้ว',data:months.map(()=>Math.round(total/8*(0.8+Math.random()*.4))),backgroundColor:'rgba(6,214,160,0.75)',borderRadius:6},{label:'กำลังดำเนินการ',data:months.map(()=>Math.round(total/12*(0.6+Math.random()*.4))),backgroundColor:'rgba(79,126,255,0.75)',borderRadius:6}]},options:{...CHART_DEFAULTS}});
+  if(c1) DASH_CHARTS['pm-monthly']=new Chart(c1,{type:'bar',data:{labels:months,datasets:[{label:'เสร็จแล้ว',data:months.map(()=>Math.round(total/8*(0.8+Math.random()*.4))),backgroundColor:'rgba(6,214,160,0.75)',borderRadius:6},{label:'กำลังดำเนินการ',data:months.map(()=>Math.round(total/12*(0.6+Math.random()*.4))),backgroundColor:'rgba(79,126,255,0.75)',borderRadius:6}]},options:{...getChartDefaults()}});
   destroyChart('pm-bld');
   const c2=document.getElementById('chart-pm-bld');
   const blds=['Ari Hills','KSL','ESV','Training'];
@@ -4412,7 +4402,7 @@ function renderSRPanel(data){
   const months=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.'];
   destroyChart('sr-monthly');
   const c1=document.getElementById('chart-sr-monthly');
-  if(c1) DASH_CHARTS['sr-monthly']=new Chart(c1,{type:'bar',data:{labels:months,datasets:[{label:'SR',data:months.map(()=>Math.round(total/6*(0.7+Math.random()*.5))),backgroundColor:'rgba(155,89,255,0.75)',borderRadius:6}]},options:{...CHART_DEFAULTS}});
+  if(c1) DASH_CHARTS['sr-monthly']=new Chart(c1,{type:'bar',data:{labels:months,datasets:[{label:'SR',data:months.map(()=>Math.round(total/6*(0.7+Math.random()*.5))),backgroundColor:'rgba(155,89,255,0.75)',borderRadius:6}]},options:{...getChartDefaults()}});
   destroyChart('sr-bld');
   const c2=document.getElementById('chart-sr-bld');
   const blds=['Ari Hills','KSL','ESV','Training'];
@@ -4531,8 +4521,7 @@ loadPanelData = async function(panelId){
 const _origSwitchDashPanel = switchDashPanel;
 switchDashPanel = function(panel, btn){
   _origSwitchDashPanel(panel, btn);
-  if(panel==='overview') { /* slideshow handles itself */ }
-  else if(panel==='cm') setTimeout(()=>{ initCMDemo(); resizeAllCharts(); }, 150);
+  if(panel==='cm') setTimeout(()=>{ initCMDemo(); resizeAllCharts(); }, 150);
   else if(panel==='pm') setTimeout(()=>{ initPMDemo(); resizeAllCharts(); }, 150);
   else if(panel==='sr') setTimeout(()=>{ initSRDemo(); resizeAllCharts(); }, 150);
   else if(panel==='misc') setTimeout(()=>{ initBookingCalendar(); resizeAllCharts(); }, 150);
@@ -4552,6 +4541,128 @@ updateSheetBtnStates = function(){
       :`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> เชื่อมต่อ Sheets`;
   });
 };
+</script>
+<script>
+/* ══════════════════════════════════════════════════
+   SLIDESHOW — panel-overview เท่านั้น
+   ไม่แตะ CSS กลาง / ไม่แตะ panel อื่นใดเลย
+   AUTO_INTERVAL  = วินาทีระหว่าง slide  (แก้ได้ที่นี่)
+   IDLE_RESET     = วินาทีรอหลังกดแล้ว resume (แก้ได้ที่นี่)
+══════════════════════════════════════════════════ */
+(function(){
+  var AUTO_INTERVAL = 10;   // ← แก้เวลาสลับหน้าได้ที่นี่ (วินาที)
+  var IDLE_RESET    = 15;   // ← แก้เวลา resume หลังกดปุ่มได้ที่นี่ (วินาที)
+
+  var SLIDES = [
+    { slide:'ss-slide-0', tab:'ss-tab-0', dot:'ss-dot-0',
+      title:'🔔 ระบบแจ้งเตือน LINE',
+      link:'https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/' },
+    { slide:'ss-slide-1', tab:'ss-tab-1', dot:'ss-dot-1',
+      title:'📚 ปฏิทินจองห้องสมุด',
+      link:'https://chaiwatsuthacheewa-creator.github.io/NTL-Library-Room/' },
+    { slide:'ss-slide-2', tab:'ss-tab-2', dot:'ss-dot-2',
+      title:'🚗 ปฏิทินจองจอดรถ',
+      link:'https://add00917-hue.github.io/carpark/' },
+  ];
+
+  var cur = 0, playing = true, cd = AUTO_INTERVAL;
+  var ticker = null, idler = null;
+  var CIRC = 62.8; // 2π×10
+
+  function $(id){ return document.getElementById(id); }
+
+  function ssShow(idx){
+    cur = ((idx % SLIDES.length) + SLIDES.length) % SLIDES.length;
+    SLIDES.forEach(function(s, i){
+      var active = (i === cur);
+      // slide frame
+      var sf = $(s.slide);
+      if(sf) sf.style.display = active ? 'block' : 'none';
+      // tab button
+      var tb = $(s.tab);
+      if(tb){
+        tb.style.background   = active ? 'linear-gradient(135deg,#4F7EFF,#9B59FF)' : 'transparent';
+        tb.style.color        = active ? '#fff' : 'var(--text2)';
+        tb.style.borderColor  = active ? 'transparent' : 'var(--border2)';
+        tb.style.boxShadow    = active ? '0 2px 8px rgba(79,126,255,.35)' : 'none';
+      }
+      // dot
+      var dt = $(s.dot);
+      if(dt){
+        dt.style.width         = active ? '20px' : '8px';
+        dt.style.borderRadius  = active ? '4px'  : '50%';
+        dt.style.background    = active ? 'var(--cyan)' : 'rgba(255,255,255,.18)';
+        dt.style.boxShadow     = active ? '0 0 6px var(--cyan)' : 'none';
+      }
+    });
+    // title + link
+    var tEl = $('ss-title'), lEl = $('ss-openlink');
+    if(tEl) tEl.textContent = SLIDES[cur].title;
+    if(lEl) lEl.href = SLIDES[cur].link;
+  }
+
+  function updateRing(){
+    var ring = $('ss-ring'), num = $('ss-num');
+    if(!ring || !num) return;
+    var pct = cd / AUTO_INTERVAL;
+    ring.style.strokeDashoffset = CIRC * (1 - pct);
+    num.textContent = Math.max(0, Math.ceil(cd));
+  }
+
+  function startTicker(){
+    clearInterval(ticker);
+    cd = AUTO_INTERVAL;
+    updateRing();
+    ticker = setInterval(function(){
+      if(!playing) return;
+      cd -= 0.1;
+      updateRing();
+      if(cd <= 0){ cd = AUTO_INTERVAL; ssShow(cur + 1); }
+    }, 100);
+  }
+
+  function setPaused(){
+    playing = false;
+    var btn=$('ss-playbtn'), ico=$('ss-playico'), lbl=$('ss-playlbl');
+    if(btn){ btn.style.borderColor='rgba(255,209,102,.4)'; btn.style.background='rgba(255,209,102,.08)'; btn.style.color='var(--yellow)'; }
+    if(ico) ico.innerHTML='<polygon points="5 3 19 12 5 21 5 3"/>';
+    if(lbl) lbl.textContent='เล่น';
+  }
+
+  function setPlaying(){
+    playing = true; cd = AUTO_INTERVAL;
+    var btn=$('ss-playbtn'), ico=$('ss-playico'), lbl=$('ss-playlbl');
+    if(btn){ btn.style.borderColor='rgba(0,212,255,.3)'; btn.style.background='rgba(0,212,255,.07)'; btn.style.color='var(--cyan)'; }
+    if(ico) ico.innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+    if(lbl) lbl.textContent='หยุด';
+  }
+
+  function userAction(){
+    if(playing) setPaused();
+    clearTimeout(idler);
+    idler = setTimeout(function(){ setPlaying(); }, IDLE_RESET * 1000);
+  }
+
+  // Global functions สำหรับ onclick ใน HTML
+  window.ssGo   = function(i){ ssShow(i); userAction(); };
+  window.ssNext = function(){ ssShow(cur+1); userAction(); };
+  window.ssPrev = function(){ ssShow(cur-1); userAction(); };
+  window.ssTogglePlay = function(){
+    if(playing){ setPaused(); clearTimeout(idler); }
+    else        { setPlaying(); }
+  };
+
+  // Init หลัง DOM พร้อม
+  function init(){
+    ssShow(0);
+    startTicker();
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
 </script>
 </body>
 </html>
