@@ -56,6 +56,9 @@
 }
 #panel-overview.active { display:flex; }
 
+/* ss-bar scrollbar hidden */
+#ss-bar::-webkit-scrollbar { display:none; }
+
 /* theme toggle button */
 .theme-toggle-btn {
   display:flex; align-items:center; gap:5px;
@@ -1858,7 +1861,7 @@ body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
       <div class="dash-panel-view active" id="panel-overview" style="overflow:hidden;">
 
         <!-- Slideshow Control Bar -->
-        <div id="ss-bar" style="display:flex;align-items:center;gap:8px;padding:.5rem 1.1rem;border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(20,23,40,.97);flex-wrap:wrap;">
+        <div id="ss-bar" style="display:flex;align-items:center;gap:8px;padding:.5rem 1.1rem;border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(20,23,40,.97);flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;">
 
           <!-- Title -->
           <span id="ss-title" style="font-family:Kanit;font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;">🔔 ระบบแจ้งเตือน LINE</span>
@@ -1868,6 +1871,7 @@ body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
             <button onclick="ssGo(0)" id="ss-tab-0" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid transparent;background:linear-gradient(135deg,#4F7EFF,#9B59FF);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(79,126,255,.35);">🔔 LINE Notify</button>
             <button onclick="ssGo(1)" id="ss-tab-1" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;">📚 ห้องสมุด</button>
             <button onclick="ssGo(2)" id="ss-tab-2" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;">🚗 จอดรถ</button>
+            <button onclick="ssGo(3)" id="ss-tab-3" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;">🌐 เว็บไซต์</button>
           </div>
 
           <!-- Dots -->
@@ -1875,6 +1879,7 @@ body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
             <div id="ss-dot-0" style="width:20px;height:8px;border-radius:4px;background:var(--cyan);box-shadow:0 0 6px var(--cyan);transition:all .25s;"></div>
             <div id="ss-dot-1" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .25s;cursor:pointer;" onclick="ssGo(1)"></div>
             <div id="ss-dot-2" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .25s;cursor:pointer;" onclick="ssGo(2)"></div>
+            <div id="ss-dot-3" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .25s;cursor:pointer;" onclick="ssGo(3)"></div>
           </div>
 
           <div style="flex:1;min-width:8px;"></div>
@@ -1925,6 +1930,11 @@ body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
           <div id="ss-slide-2" style="position:absolute;inset:0;display:none;">
             <iframe src="https://add00917-hue.github.io/carpark/"
               style="width:100%;height:100%;border:none;display:block;" title="Car Park Booking"></iframe>
+          </div>
+
+          <div id="ss-slide-3" style="position:absolute;inset:0;display:none;">
+            <iframe src="https://add00917-hue.github.io/-/"
+              style="width:100%;height:100%;border:none;display:block;" title="Website"></iframe>
           </div>
 
         </div>
@@ -4550,8 +4560,8 @@ updateSheetBtnStates = function(){
    IDLE_RESET     = วินาทีรอหลังกดแล้ว resume (แก้ได้ที่นี่)
 ══════════════════════════════════════════════════ */
 (function(){
-  var AUTO_INTERVAL = 30;   // ← แก้เวลาสลับหน้าได้ที่นี่ (วินาที)
-  var IDLE_RESET    = 30;   // ← แก้เวลา resume หลังกดปุ่มได้ที่นี่ (วินาที)
+  var AUTO_INTERVAL = 10;   // ← แก้เวลาสลับหน้าได้ที่นี่ (วินาที)
+  var IDLE_RESET    = 15;   // ← แก้เวลา resume หลังกดปุ่มได้ที่นี่ (วินาที)
 
   var SLIDES = [
     { slide:'ss-slide-0', tab:'ss-tab-0', dot:'ss-dot-0',
@@ -4563,6 +4573,9 @@ updateSheetBtnStates = function(){
     { slide:'ss-slide-2', tab:'ss-tab-2', dot:'ss-dot-2',
       title:'🚗 ปฏิทินจองจอดรถ',
       link:'https://add00917-hue.github.io/carpark/' },
+    { slide:'ss-slide-3', tab:'ss-tab-3', dot:'ss-dot-3',
+      title:'🌐 เว็บไซต์',
+      link:'https://add00917-hue.github.io/-/' },
   ];
 
   var cur = 0, playing = true, cd = AUTO_INTERVAL;
