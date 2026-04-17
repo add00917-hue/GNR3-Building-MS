@@ -300,18 +300,6 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
 .dp-sheet-btn.connected { color:var(--green); }
 .dp-sheet-btn.disconnected { color:var(--text3); border-color:var(--border); }
 /* Speak / TTS button */
-.dp-speak-btn {
-  display:inline-flex; align-items:center; gap:5px;
-  font-family:'Kanit'; font-size:11px; font-weight:600;
-  padding:7px 13px; border-radius:var(--radius-sm); cursor:pointer;
-  border:1.5px solid rgba(155,89,255,0.30); background:rgba(155,89,255,0.08);
-  color:var(--purple); transition:all .18s; white-space:nowrap;
-}
-.dp-speak-btn:hover { background:rgba(155,89,255,0.18); border-color:rgba(155,89,255,0.55); }
-.dp-speak-btn.speaking { background:rgba(155,89,255,0.22); border-color:var(--purple); color:#fff; animation:speakPulse 1.2s ease-in-out infinite; }
-.dp-speak-btn.speaking svg { animation:speakWave 0.6s ease-in-out infinite alternate; }
-@keyframes speakPulse { 0%,100%{box-shadow:0 0 0 0 rgba(155,89,255,0.5);}50%{box-shadow:0 0 0 7px rgba(155,89,255,0);} }
-@keyframes speakWave { from{transform:scaleY(0.7)} to{transform:scaleY(1.2)} }
 
 /* ── Building filter tabs ── */
 .dp-building-tabs {
@@ -1351,219 +1339,6 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
   }
 }
 
-
-/* ══════════════════════════════════════
-   AI ASSISTANT — GNR3 Bot
-══════════════════════════════════════ */
-
-/* Floating trigger button */
-.ai-fab {
-  position:fixed; bottom:calc(78px + env(safe-area-inset-bottom,0px)); right:18px; z-index:600;
-  width:52px; height:52px; border-radius:50%;
-  background:linear-gradient(145deg,#4F7EFF,#9B59FF);
-  border:none; cursor:pointer; color:#fff;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:0 6px 24px rgba(79,126,255,.55), 0 0 0 0 rgba(79,126,255,.4);
-  transition:transform .22s, box-shadow .22s;
-  animation:aiFabPulse 3s ease-in-out infinite;
-}
-.ai-fab:hover { transform:scale(1.10); box-shadow:0 10px 32px rgba(79,126,255,.65); }
-.ai-fab:active { transform:scale(.93); }
-.ai-fab.listening {
-  background:linear-gradient(145deg,#FF4D8D,#FF8C42);
-  animation:aiListenPulse .8s ease-in-out infinite;
-}
-.ai-fab.thinking {
-  background:linear-gradient(145deg,#FFD166,#FF8C42);
-  animation:aiThinkSpin 1s linear infinite;
-}
-@keyframes aiFabPulse {
-  0%,100%{box-shadow:0 6px 24px rgba(79,126,255,.55),0 0 0 0 rgba(79,126,255,.3);}
-  50%{box-shadow:0 6px 24px rgba(79,126,255,.55),0 0 0 10px rgba(79,126,255,0);}
-}
-@keyframes aiListenPulse {
-  0%,100%{box-shadow:0 0 0 0 rgba(255,77,141,.6);}
-  50%{box-shadow:0 0 0 14px rgba(255,77,141,0);}
-}
-@keyframes aiThinkSpin { to{filter:hue-rotate(360deg);} }
-
-/* Status badge on fab */
-.ai-fab-badge {
-  position:absolute; top:-3px; right:-3px;
-  width:18px; height:18px; border-radius:50%;
-  background:var(--green); border:2px solid var(--bg);
-  font-size:8px; font-weight:800; color:#fff;
-  display:flex; align-items:center; justify-content:center;
-}
-
-/* Chat panel */
-.ai-panel {
-  position:fixed; bottom:158px; right:18px; z-index:599;
-  width:340px; max-height:480px;
-  background:rgba(22,25,45,0.97);
-  backdrop-filter:blur(24px);
-  border-radius:var(--radius-xl);
-  border:1px solid rgba(255,255,255,0.10);
-  box-shadow:0 20px 60px rgba(0,0,0,.60), 0 0 0 1px rgba(79,126,255,.12);
-  display:flex; flex-direction:column; overflow:hidden;
-  transform:translateY(16px) scale(.95); opacity:0; pointer-events:none;
-  transition:transform .28s cubic-bezier(.22,1,.36,1), opacity .22s ease;
-}
-.ai-panel.open { transform:translateY(0) scale(1); opacity:1; pointer-events:auto; }
-@media(max-width:640px){
-  .ai-panel { width:calc(100vw - 36px); bottom:148px; right:18px; max-height:420px; }
-}
-
-/* Panel header */
-.ai-panel-head {
-  display:flex; align-items:center; gap:10px;
-  padding:.9rem 1rem .7rem;
-  border-bottom:1px solid rgba(255,255,255,0.07);
-  flex-shrink:0;
-}
-.ai-avatar {
-  width:34px; height:34px; border-radius:11px; flex-shrink:0;
-  background:linear-gradient(145deg,#4F7EFF,#9B59FF);
-  display:flex; align-items:center; justify-content:center;
-  font-size:16px;
-}
-.ai-head-info { flex:1; min-width:0; }
-.ai-head-name { font-family:'Kanit'; font-size:13px; font-weight:700; color:var(--text); }
-.ai-head-status { font-size:10px; color:var(--text2); display:flex; align-items:center; gap:5px; }
-.ai-status-dot {
-  width:6px; height:6px; border-radius:50%; background:var(--green);
-  animation:livePulse 2s infinite; flex-shrink:0;
-}
-.ai-status-dot.thinking { background:var(--yellow); animation:aiThinkSpin 1s linear infinite; }
-.ai-status-dot.listening { background:var(--pink); animation:aiListenPulse .8s infinite; }
-.ai-close-btn {
-  width:26px; height:26px; border-radius:8px; border:none;
-  background:rgba(255,255,255,.07); color:var(--text2); cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  transition:background .15s, color .15s;
-}
-.ai-close-btn:hover { background:rgba(255,85,105,.18); color:var(--red); }
-
-/* Messages */
-.ai-messages {
-  flex:1; overflow-y:auto; padding:.8rem 1rem; display:flex; flex-direction:column; gap:10px;
-  scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.1) transparent;
-}
-.ai-messages::-webkit-scrollbar{width:4px;}
-.ai-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px;}
-
-.ai-msg {
-  display:flex; gap:8px; align-items:flex-end;
-  animation:fadeUp .25s cubic-bezier(.22,1,.36,1) both;
-}
-.ai-msg.user { flex-direction:row-reverse; }
-.ai-msg-ico {
-  width:26px; height:26px; border-radius:8px; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  font-size:13px;
-}
-.ai-msg.bot .ai-msg-ico { background:linear-gradient(145deg,#4F7EFF,#9B59FF); }
-.ai-msg.user .ai-msg-ico { background:var(--surface2); }
-
-.ai-bubble {
-  max-width:82%; padding:.6rem .85rem;
-  border-radius:14px; font-size:12.5px; line-height:1.55; color:var(--text);
-}
-.ai-msg.bot .ai-bubble {
-  background:var(--surface2); border:1px solid rgba(255,255,255,.07);
-  border-bottom-left-radius:4px;
-}
-.ai-msg.user .ai-bubble {
-  background:linear-gradient(135deg,#4F7EFF,#7B5CFF); color:#fff;
-  border-bottom-right-radius:4px;
-}
-.ai-bubble.typing {
-  display:flex; gap:4px; align-items:center; padding:.7rem .85rem;
-}
-.ai-typing-dot {
-  width:7px; height:7px; border-radius:50%; background:var(--text2);
-  animation:typingBounce 1.2s ease-in-out infinite;
-}
-.ai-typing-dot:nth-child(2){animation-delay:.2s;}
-.ai-typing-dot:nth-child(3){animation-delay:.4s;}
-@keyframes typingBounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-8px);}}
-
-/* Input bar */
-.ai-input-bar {
-  display:flex; gap:6px; align-items:center;
-  padding:.6rem .8rem .8rem; flex-shrink:0;
-  border-top:1px solid rgba(255,255,255,0.07);
-}
-.ai-key-warning {
-  padding:.5rem .8rem; font-size:10px; color:var(--yellow);
-  background:rgba(255,209,102,.08); border-top:1px solid rgba(255,209,102,.15);
-  text-align:center; flex-shrink:0;
-}
-.ai-text-input {
-  flex:1; background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.09);
-  border-radius:var(--radius-md); padding:8px 12px; color:var(--text);
-  font-family:'Sarabun'; font-size:13px; outline:none;
-  transition:border-color .18s, background .18s;
-}
-.ai-text-input:focus { border-color:rgba(79,126,255,.45); background:rgba(255,255,255,.08); }
-.ai-text-input::placeholder { color:var(--text3); }
-
-.ai-voice-btn, .ai-send-btn {
-  width:36px; height:36px; border-radius:11px; border:none;
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer; flex-shrink:0; transition:all .18s;
-}
-.ai-voice-btn {
-  background:rgba(255,255,255,.06); color:var(--text2);
-  border:1.5px solid rgba(255,255,255,.09);
-}
-.ai-voice-btn:hover { color:var(--blue); border-color:rgba(79,126,255,.35); background:rgba(79,126,255,.10); }
-.ai-voice-btn.recording {
-  background:rgba(255,77,141,.18); color:var(--pink);
-  border-color:rgba(255,77,141,.40); animation:aiListenPulse .8s infinite;
-}
-.ai-send-btn {
-  background:linear-gradient(135deg,#4F7EFF,#9B59FF); color:#fff;
-  box-shadow:0 3px 10px rgba(79,126,255,.35);
-}
-.ai-send-btn:hover { opacity:.88; transform:scale(1.05); }
-.ai-send-btn:disabled { opacity:.35; cursor:not-allowed; transform:none; }
-
-/* API key input inside panel */
-.ai-key-setup {
-  padding:.8rem 1rem; border-top:1px solid rgba(255,255,255,.06);
-  display:flex; flex-direction:column; gap:8px; flex-shrink:0;
-}
-.ai-key-label { font-size:10px; color:var(--text2); font-family:'Kanit'; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
-.ai-key-row { display:flex; gap:6px; }
-.ai-key-input {
-  flex:1; background:rgba(255,255,255,.05); border:1.5px solid rgba(255,209,102,.25);
-  border-radius:var(--radius-sm); padding:7px 10px; color:var(--yellow);
-  font-family:'Sarabun'; font-size:11.5px; outline:none;
-  transition:border-color .18s;
-}
-.ai-key-input:focus { border-color:rgba(255,209,102,.55); }
-.ai-key-save-btn {
-  font-family:'Kanit'; font-size:11px; font-weight:700;
-  padding:7px 14px; border-radius:var(--radius-sm); cursor:pointer;
-  background:rgba(255,209,102,.15); border:1.5px solid rgba(255,209,102,.30);
-  color:var(--yellow); transition:all .18s; white-space:nowrap;
-}
-.ai-key-save-btn:hover { background:rgba(255,209,102,.25); }
-
-/* Quick prompts */
-.ai-quick-prompts {
-  display:flex; gap:5px; flex-wrap:wrap;
-  padding:.5rem 1rem .2rem; flex-shrink:0;
-}
-.ai-quick-btn {
-  font-family:'Kanit'; font-size:10px; font-weight:600;
-  padding:4px 10px; border-radius:20px; cursor:pointer;
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10);
-  color:var(--text2); transition:all .18s; white-space:nowrap;
-}
-.ai-quick-btn:hover { color:var(--blue); border-color:rgba(79,126,255,.30); background:rgba(79,126,255,.10); }
-
 </style>
 </head>
 <body>
@@ -1730,58 +1505,6 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
 
 
 
-<!-- AI ASSISTANT -->
-<!-- Floating button -->
-<button class="ai-fab" id="ai-fab" onclick="toggleAiPanel()" title="GNR3 AI Assistant">
-  <svg id="ai-fab-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.06L2 22l4.94-1.38A9.955 9.955 0 0012 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/><path d="M8 10h8M8 14h5"/></svg>
-  <div class="ai-fab-badge">AI</div>
-</button>
-
-<!-- Chat panel -->
-<div class="ai-panel" id="ai-panel">
-  <div class="ai-panel-head">
-    <div class="ai-avatar">🤖</div>
-    <div class="ai-head-info">
-      <div class="ai-head-name">GNR3 Assistant</div>
-      <div class="ai-head-status" id="ai-status-row">
-        <span class="ai-status-dot" id="ai-status-dot"></span>
-        <span id="ai-status-text">พร้อมช่วยเหลือ</span>
-      </div>
-    </div>
-    <button class="ai-close-btn" onclick="toggleAiPanel()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-  </div>
-  <div class="ai-messages" id="ai-messages"></div>
-  <div class="ai-quick-prompts" id="ai-quick-prompts">
-    <button class="ai-quick-btn" onclick="aiSendQuick('สรุปสถานะระบบให้ฉันหน่อย')">📊 สรุปสถานะ</button>
-    <button class="ai-quick-btn" onclick="aiSendQuick('มีรายการ WIP กี่รายการ')">🔧 WIP คืออะไร</button>
-    <button class="ai-quick-btn" onclick="aiSendQuick('วิธีเพิ่มเมนูใหม่')">➕ เพิ่มเมนู</button>
-    <button class="ai-quick-btn" onclick="aiSendQuick('ระบบ GNR3 มีอะไรบ้าง')">ℹ️ เกี่ยวกับระบบ</button>
-  </div>
-  <!-- API Key setup (shown when no key saved) -->
-  <div class="ai-key-setup" id="ai-key-setup">
-    <div class="ai-key-label">🔑 Gemini API Key</div>
-    <div class="ai-key-row">
-      <input class="ai-key-input" id="ai-key-input" type="password" placeholder="AIza...">
-      <button class="ai-key-save-btn" onclick="saveAiKey()">บันทึก</button>
-    </div>
-    <div style="font-size:10px;color:var(--text3)">
-      รับ API Key ฟรีที่ <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--cyan)">aistudio.google.com</a>
-    </div>
-  </div>
-  <div class="ai-input-bar" id="ai-input-bar">
-    <button class="ai-voice-btn" id="ai-voice-btn" onclick="toggleVoice()" title="พูดคำสั่ง">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>
-    </button>
-    <input class="ai-text-input" id="ai-text-input" placeholder="พิมพ์หรือพูดคำถาม..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend();}">
-    <button class="ai-send-btn" id="ai-send-btn" onclick="aiSend()">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-    </button>
-  </div>
-</div>
-
-
 <!-- Sidebar Toggle Button -->
 <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="ซ่อน/แสดงเมนู">
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -1835,10 +1558,6 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
             <div class="dp-panel-sub">CM · PM · SR — Corrective / Preventive / Service Request</div>
           </div>
           <div class="dp-header-right">
-            <button class="dp-speak-btn" id="speak-btn-cmpmsr" onclick="dashSpeak('cmpmsr')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
-              อ่านสรุป
-            </button>
             <button class="dp-sheet-btn disconnected" id="btn-sheet-cmpmsr" onclick="openSheetConfig('cmpmsr')">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               เชื่อมต่อ Sheets
@@ -2013,7 +1732,6 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
             <div class="dp-panel-sub">ติดตามความคืบหน้าโครงการปรับปรุงพื้นที่</div>
           </div>
           <div class="dp-header-right">
-            <button class="dp-speak-btn" id="speak-btn-project" onclick="dashSpeak('project')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>อ่านสรุป</button>
             <button class="dp-sheet-btn disconnected" id="btn-sheet-project" onclick="openSheetConfig('project')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Sheets</button>
             <button class="dp-refresh-btn" onclick="loadPanelData('project')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>รีเฟรช</button>
           </div>
@@ -2049,7 +1767,6 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
             <div class="dp-panel-sub">งานซ่อมบำรุงเชิงแก้ไข — แก้ไขความเสียหายที่เกิดขึ้น</div>
           </div>
           <div class="dp-header-right">
-            <button class="dp-speak-btn" id="speak-btn-cm" onclick="dashSpeak('cm')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>อ่านสรุป</button>
             <button class="dp-sheet-btn disconnected" id="btn-sheet-cm" onclick="openSheetConfig('cm')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Sheets</button>
             <button class="dp-refresh-btn" onclick="loadPanelData('cm')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>รีเฟรช</button>
           </div>
@@ -2095,7 +1812,6 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
             <div class="dp-panel-sub">งานซ่อมบำรุงเชิงป้องกัน — ตรวจสอบและบำรุงรักษาตามกำหนด</div>
           </div>
           <div class="dp-header-right">
-            <button class="dp-speak-btn" id="speak-btn-pm" onclick="dashSpeak('pm')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>อ่านสรุป</button>
             <button class="dp-sheet-btn disconnected" id="btn-sheet-pm" onclick="openSheetConfig('pm')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Sheets</button>
             <button class="dp-refresh-btn" onclick="loadPanelData('pm')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>รีเฟรช</button>
           </div>
@@ -2141,7 +1857,6 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
             <div class="dp-panel-sub">คำขอรับบริการ — งานที่ผู้ใช้งานแจ้งขอรับการสนับสนุน</div>
           </div>
           <div class="dp-header-right">
-            <button class="dp-speak-btn" id="speak-btn-sr" onclick="dashSpeak('sr')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>อ่านสรุป</button>
             <button class="dp-sheet-btn disconnected" id="btn-sheet-sr" onclick="openSheetConfig('sr')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Sheets</button>
             <button class="dp-refresh-btn" onclick="loadPanelData('sr')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>รีเฟรช</button>
           </div>
@@ -2213,7 +1928,6 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
             <div class="dp-panel-sub">รายงานการขอใช้เครื่องปรับอากาศนอกเวลา</div>
           </div>
           <div class="dp-header-right">
-            <button class="dp-speak-btn" id="speak-btn-otair" onclick="dashSpeak('otair')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>อ่านสรุป</button>
             <button class="dp-sheet-btn disconnected" id="btn-sheet-otair" onclick="openSheetConfig('otair')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>เชื่อมต่อ Sheets</button>
             <button class="dp-refresh-btn" onclick="loadPanelData('otair')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>รีเฟรช</button>
           </div>
@@ -3375,11 +3089,6 @@ window.addEventListener('load',()=>{
   if(typeof loadConfigFromURL==='function') loadConfigFromURL();
   initTheme();
   route();
-  // Init AI panel key state
-  const key = getAiKey();
-  if(document.getElementById('ai-key-setup')){
-    initAiPanel();
-  }
 });
 
 /* ══ CLOCK ══ */
@@ -3481,380 +3190,6 @@ renderDashboard = function(){
   bnavShowDashSub();
 };
 
-
-/* ══════════════════════════════════════
-   AI ASSISTANT — Gemini + Voice
-══════════════════════════════════════ */
-const AI_KEY_STORAGE = 'gnr3_gemini_key';
-const AI_MODEL = 'gemini-2.0-flash';
-// ─────────────────────────────────────────────
-// ฝัง API Key ที่นี่ (จำกัด domain ก่อนที่ Google Console)
-// ถ้าไม่ต้องการฝัง ให้ใส่ '' แล้วผู้ใช้กรอกเอง
-const AI_EMBEDDED_KEY = '';  // ← วาง Key ที่นี่
-// ─────────────────────────────────────────────
-let aiPanelOpen = false;
-let aiRecording = false;
-let aiRecognition = null;
-let aiMsgHistory = []; // keep last 10 msgs for context
-
-/* ── Key management ── */
-function getAiKey(){
-  // ใช้ embedded key ก่อน ถ้าไม่มีค่อยใช้ key ที่ผู้ใช้กรอก
-  if(AI_EMBEDDED_KEY && AI_EMBEDDED_KEY.startsWith('AIza')) return AI_EMBEDDED_KEY;
-  return localStorage.getItem(AI_KEY_STORAGE)||'';
-}
-function saveAiKey(){
-  const key = document.getElementById('ai-key-input').value.trim();
-  if(!key){ showToast('⚠ กรุณาใส่ API Key'); return; }
-  if(!key.startsWith('AIza')){ showToast('⚠ API Key ไม่ถูกต้อง — ต้องขึ้นต้นด้วย AIza'); return; }
-  localStorage.setItem(AI_KEY_STORAGE, key);
-  document.getElementById('ai-key-setup').style.display='none';
-  document.getElementById('ai-input-bar').style.display='flex';
-  aiAddMsg('bot','✅ บันทึก API Key แล้ว พร้อมใช้งาน! ลองถามอะไรได้เลยครับ');
-  showToast('✓ บันทึก Gemini API Key แล้ว');
-}
-
-/* ── Panel toggle ── */
-function toggleAiPanel(){
-  aiPanelOpen = !aiPanelOpen;
-  document.getElementById('ai-panel').classList.toggle('open', aiPanelOpen);
-  if(aiPanelOpen){
-    const key = getAiKey();
-    initAiPanel();
-    if(aiMsgHistory.length===0) aiWelcome();
-    setTimeout(()=>document.getElementById('ai-text-input').focus(), 300);
-  }
-}
-
-function aiWelcome(){
-  const secs = SECTIONS.length;
-  const items = SECTIONS.flatMap(s=>s.items).length;
-  aiAddMsg('bot','สวัสดีครับ! 👋 ผมคือ GNR3 Assistant\n\nระบบของคุณมี **'+secs+' หมวดหมู่** และ **'+items+' รายการย่อย**\n\nถามได้เลยครับ เช่น สรุปสถานะ, วิธีใช้งาน, หรือข้อมูลระบบ');
-}
-
-/* ── Add message to chat ── */
-function aiAddMsg(role, text){
-  const wrap = document.getElementById('ai-messages');
-  const div = document.createElement('div');
-  div.className = 'ai-msg ' + role;
-
-  // format markdown-lite: **bold**, newlines
-  const formatted = text
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\n/g,'<br>');
-
-  div.innerHTML = `
-    <div class="ai-msg-ico">${role==='bot'?'🤖':'👤'}</div>
-    <div class="ai-bubble">${formatted}</div>`;
-  wrap.appendChild(div);
-  wrap.scrollTop = wrap.scrollHeight;
-  aiMsgHistory.push({role: role==='bot'?'model':'user', parts:[{text}]});
-  if(aiMsgHistory.length > 6) aiMsgHistory = aiMsgHistory.slice(-6);
-}
-
-function aiAddTyping(){
-  const wrap = document.getElementById('ai-messages');
-  const div = document.createElement('div');
-  div.className = 'ai-msg bot'; div.id = 'ai-typing';
-  div.innerHTML = `<div class="ai-msg-ico">🤖</div>
-    <div class="ai-bubble typing">
-      <div class="ai-typing-dot"></div>
-      <div class="ai-typing-dot"></div>
-      <div class="ai-typing-dot"></div>
-    </div>`;
-  wrap.appendChild(div);
-  wrap.scrollTop = wrap.scrollHeight;
-}
-function aiRemoveTyping(){ const t=document.getElementById('ai-typing'); if(t)t.remove(); }
-
-/* ── Status ── */
-function aiSetStatus(state, text){
-  const dot = document.getElementById('ai-status-dot');
-  const txt = document.getElementById('ai-status-text');
-  const fab = document.getElementById('ai-fab');
-  if(dot){ dot.className = 'ai-status-dot ' + state; }
-  if(txt) txt.textContent = text;
-  if(fab){ fab.className = 'ai-fab ' + (state||''); }
-}
-
-/* ── Build system context — lightweight version ── */
-function buildSystemPrompt(){
-  // Only send category names + counts, not all sub-items
-  const secSummary = SECTIONS.map(s=>s.id+'.'+s.title+'('+s.items.length+'รายการ)').join(', ');
-  const total = SECTIONS.flatMap(s=>s.items).length;
-  const live  = SECTIONS.flatMap(s=>s.items).filter(i=>i.status==='live'||i.status==='active').length;
-  const wip   = SECTIONS.flatMap(s=>s.items).filter(i=>i.status==='wip').length;
-  return 'คุณคือ GNR3 Assistant ระบบบริหารจัดการสำนักงาน ตอบภาษาไทย กระชับ'
-    +'\nระบบมี '+SECTIONS.length+' หมวด รวม '+total+' รายการ พร้อมใช้ '+live+' WIP '+wip
-    +'\nหมวด: '+secSummary
-    +'\nDashboard: CM/PM/SR, ค่าไฟ-น้ำ, อุปโภค, โครงการ, OT AIR';
-}
-
-/* ── Call Gemini API ── */
-async function callGemini(userText){
-  const key = getAiKey();
-  if(!key){
-    aiAddMsg('bot','⚠️ กรุณาใส่ Gemini API Key ก่อนครับ');
-    document.getElementById('ai-key-setup').style.display='flex';
-    return;
-  }
-
-  aiSetStatus('thinking','กำลังคิด...');
-  aiAddTyping();
-
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${key}`;
-
-  // Send system context only on first message to save tokens
-  const isFirstMsg = aiMsgHistory.filter(m=>m.role==='user').length === 0;
-  const userContent = isFirstMsg
-    ? buildSystemPrompt() + '\n\nผู้ใช้: ' + userText
-    : userText;
-  const messages = [];
-  // Add recent history (last 4 exchanges only)
-  if(aiMsgHistory.length > 0){
-    messages.push(...aiMsgHistory.slice(-4));
-  }
-  messages.push({ role:'user', parts:[{text: userContent}] });
-
-  try {
-    const res = await fetch(endpoint, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ contents: messages, generationConfig:{ maxOutputTokens:500, temperature:0.7 } })
-    });
-
-    aiRemoveTyping();
-
-    // ── Handle quota / rate limit ──
-    if(res.status === 429){
-      const errData = await res.json().catch(()=>({}));
-      const retryMsg = errData?.error?.message?.match(/retry in (\d+)/i);
-      const waitSec = retryMsg ? parseInt(retryMsg[1]) : 60;
-      aiSetStatus('','พร้อมช่วยเหลือ');
-      aiAddMsg('bot','⚠️ **โควตา API เต็ม** (Rate Limit)\n\nกรุณารอประมาณ '+waitSec+' วินาที แล้วลองใหม่ครับ\n\n💡 หากใช้บ่อย แนะนำให้อัพเกรดเป็น Gemini API Paid Plan');
-      speak(`โควตาเต็มแล้วครับ กรุณารอสักครู่`);
-      return;
-    }
-
-    if(res.status === 400){
-      aiSetStatus('','พร้อมช่วยเหลือ');
-      aiAddMsg('bot','⚠️ API Key ไม่ถูกต้อง กรุณาตรวจสอบและใส่ใหม่ครับ');
-      document.getElementById('ai-key-setup').style.display='flex';
-      localStorage.removeItem(AI_KEY_STORAGE);
-      return;
-    }
-
-    if(!res.ok){
-      throw new Error(`HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
-    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
-      || 'ขออภัย ไม่สามารถตอบได้ในขณะนี้ครับ';
-
-    aiAddMsg('bot', reply);
-    aiSetStatus('','พร้อมช่วยเหลือ');
-    speak(reply.replace(/<[^>]+>/g,'').substring(0,200)); // TTS first 200 chars
-
-  } catch(err){
-    aiRemoveTyping();
-    aiSetStatus('','พร้อมช่วยเหลือ');
-    if(err.message.includes('Failed to fetch')){
-      aiAddMsg('bot','❌ ไม่สามารถเชื่อมต่อได้ — ตรวจสอบอินเทอร์เน็ตครับ');
-    } else {
-      aiAddMsg('bot',`❌ เกิดข้อผิดพลาด: ${err.message}`);
-    }
-    console.error('Gemini error:', err);
-  }
-}
-
-/* ── Send ── */
-function aiSend(){
-  const inp = document.getElementById('ai-text-input');
-  const text = inp.value.trim();
-  if(!text) return;
-  inp.value = '';
-  aiAddMsg('user', text);
-  callGemini(text);
-}
-function aiSendQuick(text){ aiAddMsg('user',text); callGemini(text); }
-
-/* ══ VOICE — Speech Recognition (STT) ══ */
-function toggleVoice(){
-  if(aiRecording){ stopVoice(); return; }
-  startVoice();
-}
-
-function startVoice(){
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SpeechRecognition){
-    showToast('⚠ Browser ไม่รองรับ Voice — ลองใช้ Chrome ครับ');
-    return;
-  }
-  aiRecognition = new SpeechRecognition();
-  aiRecognition.lang = 'th-TH';
-  aiRecognition.continuous = false;
-  aiRecognition.interimResults = false;
-
-  aiRecognition.onstart = ()=>{
-    aiRecording = true;
-    document.getElementById('ai-voice-btn').classList.add('recording');
-    aiSetStatus('listening','กำลังฟัง...');
-  };
-  aiRecognition.onresult = (event)=>{
-    const text = event.results[0][0].transcript;
-    stopVoice();
-    document.getElementById('ai-text-input').value = text;
-    setTimeout(()=>aiSend(), 200);
-  };
-  aiRecognition.onerror = (event)=>{
-    stopVoice();
-    if(event.error === 'no-speech'){
-      aiSetStatus('','พร้อมช่วยเหลือ');
-    } else {
-      showToast('⚠ Voice error: ' + event.error);
-    }
-  };
-  aiRecognition.onend = ()=>{ if(aiRecording) stopVoice(); };
-  aiRecognition.start();
-}
-
-function stopVoice(){
-  aiRecording = false;
-  if(aiRecognition){ aiRecognition.stop(); aiRecognition = null; }
-  document.getElementById('ai-voice-btn').classList.remove('recording');
-  aiSetStatus('','พร้อมช่วยเหลือ');
-}
-
-/* ══ TTS — Text To Speech ══ */
-function speak(text){
-  if(!text || typeof speechSynthesis === 'undefined') return;
-  // Cancel any ongoing speech
-  speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'th-TH';
-  utterance.rate = 1.1;
-  utterance.pitch = 1.0;
-  utterance.volume = 0.85;
-  // Try to find Thai voice
-  const voices = speechSynthesis.getVoices();
-  const thaiVoice = voices.find(v=>v.lang.includes('th'));
-  if(thaiVoice) utterance.voice = thaiVoice;
-  speechSynthesis.speak(utterance);
-}
-
-// Init AI on load
-
-
-
-/* ══ DASHBOARD SPEAK — AI reads summary ══ */
-let _dashSpeaking = false;
-
-function dashSpeak(panel){
-  // If already speaking this panel, stop
-  const btn = document.getElementById('speak-btn-'+panel);
-  if(_dashSpeaking){
-    speechSynthesis.cancel();
-    _dashSpeaking = false;
-    document.querySelectorAll('.dp-speak-btn').forEach(b=>{
-      b.classList.remove('speaking');
-      b.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg> อ่านสรุป';
-    });
-    return;
-  }
-
-  if(btn){ btn.classList.add('speaking'); btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/></svg> หยุด'; }
-  _dashSpeaking = true;
-
-  const summary = buildDashSummary(panel);
-  const key = getAiKey();
-
-  if(key){
-    // Use Gemini to create natural Thai summary
-    aiSetStatus('thinking','กำลังสรุปข้อมูล...');
-    const prompt = 'สรุปข้อมูลนี้เป็นประโยคภาษาไทยสั้นๆ เหมือนพนักงานรายงานให้ผู้บริหารฟัง ไม่เกิน 3 ประโยค:\n' + summary;
-    const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/'+AI_MODEL+':generateContent?key='+key;
-    fetch(endpoint, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ contents:[{role:'user',parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:200,temperature:0.5} })
-    })
-    .then(r=>{
-      if(r.status===429){ speakDash(summary); return; } // fallback to raw if quota
-      return r.json();
-    })
-    .then(data=>{
-      if(!data) return;
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || summary;
-      aiSetStatus('','พร้อมช่วยเหลือ');
-      speakDash(reply);
-    })
-    .catch(()=>{ speakDash(summary); }); // fallback
-  } else {
-    // No AI key - just read raw summary
-    speakDash(summary);
-  }
-}
-
-function speakDash(text){
-  if(!text || typeof speechSynthesis==='undefined') return;
-  speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'th-TH'; utt.rate = 1.0; utt.pitch = 1.0; utt.volume = 1.0;
-  const voices = speechSynthesis.getVoices();
-  const th = voices.find(v=>v.lang.startsWith('th'));
-  if(th) utt.voice = th;
-  utt.onend = ()=>{
-    _dashSpeaking = false;
-    document.querySelectorAll('.dp-speak-btn').forEach(b=>{
-      b.classList.remove('speaking');
-      b.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg> อ่านสรุป';
-    });
-  };
-  speechSynthesis.speak(utt);
-}
-
-function buildDashSummary(panel){
-  if(panel==='overview'){
-    const g=id=>{const e=document.getElementById(id);return e?e.textContent.trim():'ไม่มีข้อมูล';};
-    return 'ภาพรวมระบบ GNR3. Service ทั้งหมด '+g('ov-service')+' รายการ. โครงการที่กำลังดำเนินการ '+g('ov-project')+' โครงการ. OT AIR รออนุมัติ '+g('ov-ot')+' รายการ.';
-  }
-  if(panel==='announce'){
-    const g=id=>{const e=document.getElementById(id);return e?e.textContent.trim():'ไม่มีข้อมูล';};
-    return 'ประกาศสื่อสาร ทั้งหมด '+g('kv-ann-total')+' รายการ. เดือนนี้ '+g('kv-ann-month')+' รายการ. สำคัญ/เร่งด่วน '+g('kv-ann-urgent')+' รายการ.';
-  }
-  // existing cases below
-
-  const g = id => { const e=document.getElementById(id); return e?e.textContent.trim():'ไม่มีข้อมูล'; };
-  const panelNames = {cmpmsr:'CM PM SR',utility:'ค่าไฟฟ้าและน้ำประปา',supply:'อุปโภคบริโภค',project:'สรุปโครงการ',otair:'การขอ OT AIR'};
-  const name = panelNames[panel]||panel;
-  let summary = 'รายงาน'+name+'. ';
-  if(panel==='cmpmsr'){
-    summary += 'CM ทั้งหมด '+g('kv-cm')+' รายการ. ';
-    summary += 'PM เดือนนี้ '+g('kv-pm')+' รายการ. ';
-    summary += 'SR รอดำเนินการ '+g('kv-sr')+' รายการ. ';
-    summary += 'เสร็จสิ้นแล้ว '+g('kv-done')+' รายการ.';
-  } else if(panel==='utility'){
-    summary += 'ค่าไฟฟ้าเดือนนี้ '+g('kv-elec')+' บาท. ';
-    summary += 'ค่าน้ำประปา '+g('kv-water')+' บาท. ';
-    summary += 'รวมสาธารณูปโภค '+g('kv-total-util')+' บาท. ';
-    summary += 'หน่วยไฟฟ้ารวม '+g('kv-kwh')+' หน่วย.';
-  } else if(panel==='supply'){
-    summary += 'รายการทั้งหมด '+g('kv-sup-total')+' รายการ. ';
-    summary += 'สต็อกใกล้หมด '+g('kv-sup-low')+' รายการ. ';
-    summary += 'ค่าใช้จ่ายเดือนนี้ '+g('kv-sup-cost')+' บาท.';
-  } else if(panel==='project'){
-    summary += 'โครงการทั้งหมด '+g('kv-proj-total')+' โครงการ. ';
-    summary += 'กำลังดำเนินการ '+g('kv-proj-active')+' โครงการ. ';
-    summary += 'เสร็จสิ้น '+g('kv-proj-done')+' โครงการ. ';
-    summary += 'รอดำเนินการ '+g('kv-proj-wait')+' โครงการ.';
-  } else if(panel==='otair'){
-    summary += 'คำขอทั้งหมด '+g('kv-ot-total')+' รายการ. ';
-    summary += 'อนุมัติแล้ว '+g('kv-ot-approve')+' รายการ. ';
-    summary += 'รอการอนุมัติ '+g('kv-ot-pending')+' รายการ. ';
-    summary += 'ชั่วโมง OT รวม '+g('kv-ot-hours')+' ชั่วโมง.';
-  }
-  return summary;
-}
 
 
 /* ══ LIGHT / DARK MODE TOGGLE ══ */
