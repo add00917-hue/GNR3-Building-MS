@@ -45,8 +45,28 @@
 /* light-mode decorative overrides */
 [data-theme="light"] body::before { background-image:radial-gradient(circle at 15% 20%,rgba(79,126,255,.06) 0%,transparent 45%),radial-gradient(circle at 85% 75%,rgba(155,89,255,.06) 0%,transparent 45%); }
 [data-theme="light"] .dot-grid { opacity:.10; background-image:radial-gradient(circle,rgba(26,35,64,.12) 1px,transparent 1px); }
-/* dash-content ต้องเป็น relative เพื่อให้ panel-overview absolute ได้ */
-.dash-content { position:relative; }
+/* ══ Dashboard height chain — view-dash must fill viewport below topbar ══ */
+.view-dash.active {
+  height: calc(100vh - 56px) !important;
+  display:flex !important;
+  flex-direction:column;
+  overflow:hidden;
+}
+.dash-layout {
+  flex:1 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  height:100% !important;
+  min-height:0 !important;
+}
+.dash-content {
+  position:relative !important;
+  flex:1 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+  min-height:0 !important;
+}
 #panel-overview {
   display:none;
   position:absolute; inset:0;
@@ -106,9 +126,9 @@ body{
   font-family:'Sarabun','Kanit',sans-serif;
   background:var(--bg);
   color:var(--text);
-  display:flex;          /* ← sidebar + main เป็น flex siblings */
-  height:100dvh;         /* FIX: ต้องมี height จริง ไม่ใช่แค่ min-height */
-  overflow:hidden;       /* FIX: ป้องกัน body scroll — ให้ scroll อยู่ใน panel */
+  display:block;
+  min-height:100vh;
+  overflow-x:hidden;
 }
 body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:var(--bgimg,none);background-size:cover;background-position:center;background-attachment:scroll;opacity:.13;filter:saturate(.6) brightness(.7);mix-blend-mode:luminosity;will-change:auto;transform:translateZ(0);}
 .dot-grid{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18;background-image:radial-gradient(circle,rgba(255,255,255,.12) 1px,transparent 1px);background-size:28px 28px;transform:translateZ(0);}
@@ -117,129 +137,60 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;bac
 /* ── Main content — flex:1, margin-left synced via --sw ── */
 .wrap{
   position:relative; z-index:1;
-  margin-left:var(--sw);
-  flex:1; min-width:0;
-  width:calc(100vw - var(--sw));
-  height:100%;                   /* FIX: เต็ม height ของ body */
-  padding:0 1.8rem 5rem;         /* คืน padding ปกติ */
-  overflow-y:auto;               /* FIX: scroll ที่ wrap แทน body */
-  overflow-x:hidden;
-  transition:margin-left .28s cubic-bezier(.22,1,.36,1), width .28s cubic-bezier(.22,1,.36,1);
+  max-width:1400px; margin:0 auto;
+  padding:1.5rem 1.5rem 5rem;
 }
 body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
 /* เมื่อ dashboard active: ไม่มี padding และไม่ scroll ที่ wrap */
 .wrap:has(#view-dash.active){ padding:0; overflow:hidden; }
 
 
-/* ══ SIDEBAR ══ */
+
+/* ══ TOPBAR — compact horizontal ══ */
 .topbar {
-  position:fixed; left:0; top:0; bottom:0; z-index:300;
-  width:var(--sw);            /* ← uses --sw */
-  flex-shrink:0;
-  display:flex !important; flex-direction:column; align-items:stretch;
-  background:var(--sidebar-bg);
-  border-right:1px solid var(--border);
-  box-shadow:6px 0 32px rgba(0,0,0,.45);
-  overflow:hidden; overflow-y:auto;
-  scrollbar-width:none;
-  animation:none;
-  margin:0; height:100vh; border-radius:0;
-  transition:transform .28s cubic-bezier(.22,1,.36,1);
-}
-body.sidebar-collapsed .topbar { transform:translateX(calc(-1 * var(--sw))); }
-
-/* Sidebar toggle button */
-.sidebar-toggle-btn {
-  position:fixed; left:calc(var(--sw) + 8px); top:50%; transform:translateY(-50%);
-  z-index:400; width:20px; height:48px;
-  background:var(--sidebar-bg); border:1px solid var(--border2);
-  border-left:none; border-radius:0 8px 8px 0;
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer; color:var(--text2); transition:all .28s cubic-bezier(.22,1,.36,1);
-  box-shadow:4px 0 12px rgba(0,0,0,.3);
-}
-.sidebar-toggle-btn:hover { color:var(--blue); background:rgba(79,126,255,.12); border-color:rgba(79,126,255,.35); }
-.sidebar-toggle-btn svg { transition:transform .28s; }
-body.sidebar-collapsed .sidebar-toggle-btn { left:8px; border-left:1px solid var(--border2); border-radius:8px; }
-body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
-.topbar::-webkit-scrollbar { display:none; }
-.topbar.hidden { display:flex !important; } /* sidebar always visible on desktop — mobile overrides below */
-
-/* Push wrap to the right — handled above */
-
-.topbar-brand {
-  display:flex; align-items:center; gap:11px;
-  padding:1.2rem 1rem; flex-shrink:0;
+  position:sticky; top:0; z-index:300;
+  width:100%;
+  display:flex; align-items:center; gap:6px;
+  padding:0 1.2rem;
+  height:56px;
+  background:rgba(14,17,32,0.96);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
   border-bottom:1px solid var(--border);
+  box-shadow:0 2px 20px rgba(0,0,0,.35);
 }
-.logo {
-  width:34px; height:34px; border-radius:10px; flex-shrink:0;
-  background:linear-gradient(145deg,#4F7EFF,#9B59FF);
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:0 3px 12px rgba(79,126,255,.40);
-  position:relative; overflow:hidden;
-}
+[data-theme="light"] .topbar { background:rgba(238,241,252,0.96); }
+.topbar.hidden { display:flex !important; }
+.sidebar-toggle-btn { display:none; }
+.sb-ov { display:none !important; }
+/* Brand */
+.topbar-brand { display:flex; align-items:center; gap:9px; flex-shrink:0; }
+.logo { width:32px; height:32px; border-radius:9px; flex-shrink:0; background:linear-gradient(145deg,#4F7EFF,#9B59FF); display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(79,126,255,.40); position:relative; overflow:hidden; }
 .logo::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.22),transparent 55%);}
-.logo span{font-family:'Kanit';font-size:10px;font-weight:900;color:#fff;letter-spacing:.8px;position:relative;z-index:1;}
-.htitle h1{font-family:'Kanit';font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;line-height:1.2;}
-.htitle p{font-size:9.5px;color:var(--text3);margin-top:1px;white-space:nowrap;}
-
-/* Nav tabs */
-/* Sidebar section label */
-.nav-section-label {
-  font-size:8.5px; font-weight:800; letter-spacing:2.5px; text-transform:uppercase;
-  color:var(--text3); padding:.9rem 1.1rem .3rem; flex-shrink:0;
-}
-.nav-tabs{display:flex;flex-direction:column;gap:2px;padding:.4rem .7rem;flex-shrink:0;}
-.nav-tab {
-  font-family:'Kanit'; font-size:12px; font-weight:600;
-  padding:.65rem .9rem; border-radius:var(--radius-md); border:none; cursor:pointer;
-  color:var(--text2); background:transparent;
-  display:flex; align-items:center; gap:9px; white-space:nowrap;
-  transition:all .18s; width:100%; text-align:left;
-  border-left:3px solid transparent;
-}
-.nav-tab:hover{color:var(--text);background:rgba(255,255,255,.06);border-left-color:rgba(255,255,255,.12);}
-.nav-tab.active{
-  background:linear-gradient(90deg,rgba(79,126,255,.20),rgba(79,126,255,.05));
-  color:var(--blue); border-left-color:var(--blue);
-}
-.nav-tab svg { opacity:.70; flex-shrink:0; }
+.logo span{font-family:'Kanit';font-size:9.5px;font-weight:900;color:#fff;letter-spacing:.8px;position:relative;z-index:1;}
+.htitle h1{font-family:'Kanit';font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;}
+.htitle p{display:none;}
+/* Divider */
+.topbar-divider { width:1px; height:22px; background:var(--border2); flex-shrink:0; margin:0 4px; }
+/* Nav tabs horizontal */
+.nav-section-label { display:none; }
+.nav-tabs{display:flex;gap:4px;align-items:center;}
+.nav-tab { font-family:'Kanit'; font-size:11.5px; font-weight:600; padding:6px 14px; border-radius:var(--radius-md); border:none; cursor:pointer; color:var(--text2); background:transparent; display:flex; align-items:center; gap:6px; white-space:nowrap; transition:all .2s; }
+.nav-tab:hover{ color:var(--text); background:rgba(255,255,255,.07); }
+.nav-tab.active{ background:linear-gradient(135deg,#4F7EFF,#9B59FF); color:#fff; box-shadow:0 3px 12px rgba(79,126,255,.35); }
+.nav-tab svg { opacity:.75; flex-shrink:0; }
 .nav-tab.active svg { opacity:1; }
-.nav-tab-ico {
-  width:32px; height:32px; border-radius:9px; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center;
-  background:rgba(255,255,255,.05); transition:background .18s;
-}
-.nav-tab.active .nav-tab-ico { background:rgba(79,126,255,.22); }
-
+.nav-tab-ico { display:none; }
 /* Right section */
-.topbar-right{
-  margin-top:auto; display:flex; flex-direction:column; gap:6px;
-  padding:.9rem 1rem; border-top:1px solid var(--border); flex-shrink:0;
-}
-.topbar-clock{
-  padding:.65rem .8rem; border-radius:var(--radius-md);
-  background:rgba(79,126,255,.08); border:1px solid rgba(79,126,255,.18);
-  display:flex; flex-direction:column; justify-content:center;
-}
-.clock-t{font-family:'Kanit';font-size:20px;font-weight:700;color:var(--cyan);letter-spacing:2px;line-height:1;}
-.clock-d{font-size:9.5px;color:var(--text3);margin-top:2px;}
-
-/* Admin button — minimal */
-.admin-toggle-btn {
-  display:flex; align-items:center; gap:8px; width:100%;
-  padding:.62rem .7rem; border-radius:var(--radius-md);
-  font-family:'Kanit'; font-size:12px; font-weight:600;
-  cursor:pointer; border:none;
-  background:transparent; color:var(--text2);
-  transition:all .18s; white-space:nowrap; text-align:left;
-  border-left:3px solid transparent;
-}
-.admin-toggle-btn:hover{color:var(--yellow);background:rgba(255,209,102,.08);border-left-color:rgba(255,209,102,.3);}
-.admin-toggle-btn.is-admin{color:var(--yellow);background:rgba(255,209,102,.10);border-left-color:var(--yellow);}
-.admin-badge{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--yellow);box-shadow:0 0 7px var(--yellow);animation:livePulse 2s infinite;}
-
+.topbar-right{ margin-left:auto; display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.topbar-clock{ display:flex; align-items:center; gap:6px; padding:5px 12px; border-radius:var(--radius-md); background:rgba(79,126,255,.08); border:1px solid rgba(79,126,255,.15); }
+.clock-t{font-family:'Kanit';font-size:14px;font-weight:700;color:var(--cyan);letter-spacing:1.5px;line-height:1;}
+.clock-d{font-size:9px;color:var(--text3);display:none;}
+/* Admin button */
+.admin-toggle-btn { display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:var(--radius-md); font-family:'Kanit'; font-size:11.5px; font-weight:600; cursor:pointer; border:1.5px solid var(--border2); background:transparent; color:var(--text2); transition:all .18s; white-space:nowrap; }
+.admin-toggle-btn:hover{ color:var(--yellow); border-color:rgba(255,209,102,.35); background:rgba(255,209,102,.07); }
+.admin-toggle-btn.is-admin{ color:var(--yellow); border-color:rgba(255,209,102,.35); background:rgba(255,209,102,.10); }
+.admin-badge{ display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--yellow); box-shadow:0 0 6px var(--yellow); animation:livePulse 2s infinite; }
 /* ══ VIEWS ══ */
 .view{display:none;}
 .view.active{display:block;}
@@ -274,7 +225,8 @@ body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
 }
 
 /* ── Top tab bar — single unified row ── */
-.dash-topbar {
+.dash-topbar { display:none !important; /* removed */ }
+.dash-topbar-DISABLED {
   display:flex; align-items:center;
   padding:0 1rem; height:54px;
   border-bottom:1px solid var(--border);
@@ -1096,13 +1048,14 @@ body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
 
   /* ── Dashboard mobile layout ── */
   .view-dash { width:100% !important; }
-  .view-dash.active { display:block !important; width:100% !important; height:auto !important; overflow:visible !important; padding:0 !important; }
+  .view-dash.active { display:block !important; width:100% !important; }
   .view-dash .dash-layout {
     display:flex !important; flex-direction:column !important;
     min-height:unset !important; border-radius:0 !important;
     border-left:none !important; border-right:none !important;
   }
-  .view-dash .dash-topbar { overflow-x:auto !important; -webkit-overflow-scrolling:touch !important; }
+  .view-dash .dash-topbar { display:none !important; /* removed */ }
+.dash-topbar-DISABLED { overflow-x:auto !important; -webkit-overflow-scrolling:touch !important; }
   .view-dash .dash-content {
     display:flex !important; flex-direction:column !important;
     width:100% !important; height:auto !important;
@@ -1619,8 +1572,99 @@ body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
   onload="document.body.style.setProperty('--bgimg','url(\''+this.src+'\')')"
   onerror="this.src='https://drive.google.com/uc?export=view&id=1TNslIUd6Zq3eYeykVG3laoaWKO8R_LS_'">
 
-<div class="wrap">
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <div class="logo"><span>GNR3</span></div>
+    <div class="htitle"><h1>GNR3 ระบบ</h1><p>Office Management System</p></div>
+  </div>
+  <div style="width:1px;height:22px;background:var(--border2);flex-shrink:0;margin:0 4px;"></div>
+  <nav class="nav-tabs" id="nav-tabs">
+    <button class="nav-tab active" data-tab="main" onclick="switchTab('main')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      หน้าหลัก
+    </button>
+    <button class="nav-tab" data-tab="dashboard" onclick="switchTab('dashboard')">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+      Dashboard
+    </button>
+  </nav>
+  <!-- ss-bar: shown in topbar when Dashboard is active -->
+  <div id="ss-bar" style="display:none;align-items:center;gap:6px;flex:1;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;min-width:0;">
+    <button onclick="switchTab('main')" style="display:flex;align-items:center;gap:5px;font-family:Kanit;font-size:11px;font-weight:700;padding:5px 12px;border-radius:9px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .18s;" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)';this.style.background='rgba(79,126,255,.08)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)';this.style.background='transparent'">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      หน้าหลัก
+    </button>
+    <div style="width:1px;height:20px;background:var(--border2);flex-shrink:0;margin:0 4px;"></div>
+          <!-- Title -->
+          <span id="ss-title" style="font-family:Kanit;font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;">🔔 ระบบแจ้งเตือน LINE</span>
 
+          <!-- Tab buttons -->
+          <div style="display:flex;gap:5px;flex-shrink:0;">
+            <button onclick="ssGo(0)" id="ss-tab-0" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid transparent;background:linear-gradient(135deg,#4F7EFF,#9B59FF);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(79,126,255,.35);">🔔 LINE Notify</button>
+            <button onclick="ssGo(1)" id="ss-tab-1" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;">📚 ห้องสมุด</button>
+            <button onclick="ssGo(2)" id="ss-tab-2" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;">🚗 จอดรถ</button>
+            <button onclick="ssGo(3)" id="ss-tab-3" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;">🌐 เว็บไซต์</button>
+          </div>
+
+          <!-- Dots -->
+          <div style="display:flex;gap:5px;align-items:center;flex-shrink:0;">
+            <div id="ss-dot-0" style="width:20px;height:8px;border-radius:4px;background:var(--cyan);box-shadow:0 0 6px var(--cyan);transition:all .25s;"></div>
+            <div id="ss-dot-1" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .25s;cursor:pointer;" onclick="ssGo(1)"></div>
+            <div id="ss-dot-2" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .25s;cursor:pointer;" onclick="ssGo(2)"></div>
+            <div id="ss-dot-3" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .25s;cursor:pointer;" onclick="ssGo(3)"></div>
+          </div>
+
+          <div style="flex:1;min-width:8px;"></div>
+
+          <!-- Countdown ring -->
+          <div style="position:relative;width:26px;height:26px;flex-shrink:0;">
+            <svg width="26" height="26" style="transform:rotate(-90deg);">
+              <circle cx="13" cy="13" r="10" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="2.5"/>
+              <circle id="ss-ring" cx="13" cy="13" r="10" fill="none" stroke="var(--cyan)" stroke-width="2.5"
+                stroke-dasharray="62.8" stroke-dashoffset="0" style="transition:stroke-dashoffset .12s linear;"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+              <span id="ss-num" style="font-family:Kanit;font-size:7.5px;font-weight:800;color:var(--cyan);">10</span>
+            </div>
+          </div>
+
+          <!-- Play/Pause -->
+          <button id="ss-playbtn" onclick="ssTogglePlay()" style="display:flex;align-items:center;gap:4px;font-family:Kanit;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1.5px solid rgba(0,212,255,.3);background:rgba(0,212,255,.07);color:var(--cyan);cursor:pointer;white-space:nowrap;flex-shrink:0;">
+            <svg id="ss-playico" width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            <span id="ss-playlbl">หยุด</span>
+          </button>
+
+          <!-- Prev / Next -->
+          <button onclick="ssPrev()" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button onclick="ssNext()" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+
+          <!-- Open in new tab -->
+          <a id="ss-openlink" href="https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/" target="_blank" style="font-size:10px;color:var(--cyan);text-decoration:none;font-family:Kanit;font-weight:700;padding:3px 10px;border:1.5px solid rgba(0,212,255,.3);border-radius:20px;background:rgba(0,212,255,.07);white-space:nowrap;flex-shrink:0;">เปิดใหม่ ↗</a>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-clock">
+      <div class="clock-t" id="ct">00:00:00</div>
+      <div class="clock-d" id="cd">—</div>
+    </div>
+    <div onclick="toggleTheme()" title="เปลี่ยนธีม" style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:var(--radius-md);cursor:pointer;border:1.5px solid var(--border2);background:rgba(255,255,255,.06);transition:all .2s;">
+      <span id="theme-icon" style="font-size:14px;">🌙</span>
+      <div id="theme-switch-track" style="position:relative;width:28px;height:16px;border-radius:8px;background:var(--surface2);border:1.5px solid var(--border2);flex-shrink:0;transition:all .22s;">
+        <div id="theme-switch-thumb" style="position:absolute;top:1px;left:1px;width:12px;height:12px;border-radius:50%;background:var(--text3);transition:transform .22s,background .22s;"></div>
+      </div>
+    </div>
+    <button class="admin-toggle-btn" id="admin-toggle-btn" onclick="handleAdminToggle()" title="Admin Panel">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Admin
+      <span class="admin-badge" id="admin-badge-dot" style="display:none"></span>
+    </button>
+  </div>
+</header>
+<div class="wrap">
 <!-- MOBILE SIDEBAR OVERLAY (tap to close) -->
 <div id="sb-ov" onclick="closeMobileSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:299;opacity:0;pointer-events:none;transition:opacity .3s;"></div>
 
@@ -1686,64 +1730,6 @@ body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
 
 
 
-<!-- TOPBAR -->
-<header class="topbar">
-  <!-- Brand -->
-  <div class="topbar-brand">
-    <div class="logo"><span>GNR3</span></div>
-    <div class="htitle">
-      <h1>GNR3 ระบบ</h1>
-      <p>Office Management System</p>
-    </div>
-  </div>
-
-  <!-- Main nav -->
-  <div class="nav-section-label">เมนูหลัก</div>
-  <nav class="nav-tabs" id="nav-tabs">
-    <button class="nav-tab active" data-tab="main" onclick="switchTab('main')">
-      <div class="nav-tab-ico">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      </div>
-      หน้าหลัก
-    </button>
-    <button class="nav-tab" data-tab="dashboard" onclick="switchTab('dashboard')">
-      <div class="nav-tab-ico">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-      </div>
-      Dashboard
-    </button>
-  </nav>
-
-  <!-- Admin section -->
-  <div class="nav-section-label">จัดการระบบ</div>
-  <div style="padding:.2rem .7rem">
-    <button class="admin-toggle-btn" id="admin-toggle-btn" onclick="handleAdminToggle()" title="Admin Panel">
-      <div class="nav-tab-ico">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
-      <span>Admin Panel</span>
-      <span class="admin-badge" style="display:none" id="admin-badge-dot"></span>
-    </button>
-  </div>
-
-  <!-- Bottom: clock + theme -->
-  <div class="topbar-right">
-    <div class="topbar-clock">
-      <div class="clock-t" id="ct">00:00:00</div>
-      <div class="clock-d" id="cd">—</div>
-    </div>
-    <!-- Theme toggle switch -->
-    <div onclick="toggleTheme()" title="เปลี่ยนธีม" style="display:flex;align-items:center;gap:10px;width:100%;padding:.6rem .8rem;border-radius:var(--radius-md);cursor:pointer;transition:background .18s;border:none;background:transparent;" onmouseover="this.style.background='rgba(255,255,255,.05)'" onmouseout="this.style.background='transparent'">
-      <span id="theme-icon" style="font-size:15px;flex-shrink:0;">🌙</span>
-      <span id="theme-label" style="font-family:Kanit;font-size:12px;font-weight:600;color:var(--text2);flex:1;">โหมดกลางคืน</span>
-      <!-- Toggle switch -->
-      <div id="theme-switch-track" style="position:relative;width:36px;height:20px;border-radius:10px;background:var(--surface2);border:1.5px solid var(--border2);flex-shrink:0;transition:background .22s,border-color .22s;">
-        <div id="theme-switch-thumb" style="position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--text3);transition:transform .22s,background .22s;"></div>
-      </div>
-    </div>
-  </div>
-</header>
-
 <!-- AI ASSISTANT -->
 <!-- Floating button -->
 <button class="ai-fab" id="ai-fab" onclick="toggleAiPanel()" title="GNR3 AI Assistant">
@@ -1806,53 +1792,6 @@ body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
   <div class="dash-layout">
 
     <!-- TOP TAB BAR -->
-    <div class="dash-topbar">
-      <span class="dash-topbar-title">📊 Dashboard <span>GNR3</span></span>
-      <button class="dash-nav-item active" data-panel="overview" onclick="switchDashPanel('overview',this)">
-        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
-        <span class="dni-label">Notification</span>
-      </button>
-      <button class="dash-nav-item" data-panel="cmpmsr" onclick="switchDashPanel('cmpmsr',this)">
-        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
-        <span class="dni-label">Service</span>
-      </button>
-      <button class="dash-nav-item" data-panel="cm" onclick="switchDashPanel('cm',this)">
-        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div>
-        <span class="dni-label">CM</span>
-      </button>
-      <button class="dash-nav-item" data-panel="pm" onclick="switchDashPanel('pm',this)">
-        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-        <span class="dni-label">PM</span>
-      </button>
-      <button class="dash-nav-item" data-panel="sr" onclick="switchDashPanel('sr',this)">
-        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-        <span class="dni-label">SR</span>
-      </button>
-      <button class="dash-nav-item" data-panel="project" onclick="switchDashPanel('project',this)">
-        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
-        <span class="dni-label">Project</span>
-      </button>
-      <button class="dash-nav-item" data-panel="announce" onclick="switchDashPanel('announce',this)">
-        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
-        <span class="dni-label">ประกาศสื่อสาร</span>
-      </button>
-      <button class="dash-nav-item" data-panel="misc" onclick="switchDashPanel('misc',this)">
-        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-        <span class="dni-label">สรุปการจอง</span>
-      </button>
-      <button class="dash-nav-item" data-panel="otair" onclick="switchDashPanel('otair',this)">
-        <div class="dni-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
-        <span class="dni-label">OT AIR</span>
-      </button>
-      <div class="dash-topbar-spacer"></div>
-      <div class="dash-topbar-actions">
-        <button class="dash-settings-btn" onclick="openSheetSettingsModal()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-          Sheets
-        </button>
-      </div>
-    </div>
-
     <!-- CONTENT PANELS -->
     <div class="dash-content">
 
@@ -1861,59 +1800,6 @@ body.sidebar-collapsed .sidebar-toggle-btn svg { transform:rotate(180deg); }
       <div class="dash-panel-view active" id="panel-overview" style="overflow:hidden;">
 
         <!-- Slideshow Control Bar -->
-        <div id="ss-bar" style="display:flex;align-items:center;gap:8px;padding:.5rem 1.1rem;border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(20,23,40,.97);flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;">
-
-          <!-- Title -->
-          <span id="ss-title" style="font-family:Kanit;font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;">🔔 ระบบแจ้งเตือน LINE</span>
-
-          <!-- Tab buttons -->
-          <div style="display:flex;gap:5px;flex-shrink:0;">
-            <button onclick="ssGo(0)" id="ss-tab-0" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid transparent;background:linear-gradient(135deg,#4F7EFF,#9B59FF);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(79,126,255,.35);">🔔 LINE Notify</button>
-            <button onclick="ssGo(1)" id="ss-tab-1" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;">📚 ห้องสมุด</button>
-            <button onclick="ssGo(2)" id="ss-tab-2" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;">🚗 จอดรถ</button>
-            <button onclick="ssGo(3)" id="ss-tab-3" style="font-family:Kanit;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;">🌐 เว็บไซต์</button>
-          </div>
-
-          <!-- Dots -->
-          <div style="display:flex;gap:5px;align-items:center;flex-shrink:0;">
-            <div id="ss-dot-0" style="width:20px;height:8px;border-radius:4px;background:var(--cyan);box-shadow:0 0 6px var(--cyan);transition:all .25s;"></div>
-            <div id="ss-dot-1" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .25s;cursor:pointer;" onclick="ssGo(1)"></div>
-            <div id="ss-dot-2" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .25s;cursor:pointer;" onclick="ssGo(2)"></div>
-            <div id="ss-dot-3" style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .25s;cursor:pointer;" onclick="ssGo(3)"></div>
-          </div>
-
-          <div style="flex:1;min-width:8px;"></div>
-
-          <!-- Countdown ring -->
-          <div style="position:relative;width:26px;height:26px;flex-shrink:0;">
-            <svg width="26" height="26" style="transform:rotate(-90deg);">
-              <circle cx="13" cy="13" r="10" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="2.5"/>
-              <circle id="ss-ring" cx="13" cy="13" r="10" fill="none" stroke="var(--cyan)" stroke-width="2.5"
-                stroke-dasharray="62.8" stroke-dashoffset="0" style="transition:stroke-dashoffset .12s linear;"/>
-            </svg>
-            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
-              <span id="ss-num" style="font-family:Kanit;font-size:7.5px;font-weight:800;color:var(--cyan);">10</span>
-            </div>
-          </div>
-
-          <!-- Play/Pause -->
-          <button id="ss-playbtn" onclick="ssTogglePlay()" style="display:flex;align-items:center;gap:4px;font-family:Kanit;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1.5px solid rgba(0,212,255,.3);background:rgba(0,212,255,.07);color:var(--cyan);cursor:pointer;white-space:nowrap;flex-shrink:0;">
-            <svg id="ss-playico" width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            <span id="ss-playlbl">หยุด</span>
-          </button>
-
-          <!-- Prev / Next -->
-          <button onclick="ssPrev()" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <button onclick="ssNext()" style="width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-
-          <!-- Open in new tab -->
-          <a id="ss-openlink" href="https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/" target="_blank" style="font-size:10px;color:var(--cyan);text-decoration:none;font-family:Kanit;font-weight:700;padding:3px 10px;border:1.5px solid rgba(0,212,255,.3);border-radius:20px;background:rgba(0,212,255,.07);white-space:nowrap;flex-shrink:0;">เปิดใหม่ ↗</a>
-        </div>
-
         <!-- Slide Frames — position:absolute inside a relative container -->
         <div style="position:relative;flex:1;overflow:hidden;min-height:0;">
 
@@ -2658,14 +2544,18 @@ const ADMIN_PASS = 'gnr3admin'; // เปลี่ยนรหัสผ่าน
 const STORAGE_KEY = 'gnr3_v11';
 
 const SEC_PAL = {
-  '01':{grad:'linear-gradient(145deg,#4F7EFF 0%,#7B5CFF 100%)',hex:'#4F7EFF',bar:'#4F7EFF'},
-  '02':{grad:'linear-gradient(145deg,#06D6A0 0%,#00B4CC 100%)',hex:'#06D6A0',bar:'#06D6A0'},
-  '03':{grad:'linear-gradient(145deg,#FFD166 0%,#FF8C42 100%)',hex:'#FF8C42',bar:'#FFD166'},
-  '04':{grad:'linear-gradient(145deg,#FF4D8D 0%,#FF5569 100%)',hex:'#FF4D8D',bar:'#FF4D8D'},
-  '05':{grad:'linear-gradient(145deg,#00D4FF 0%,#0099DD 100%)',hex:'#00D4FF',bar:'#00D4FF'},
-  '06':{grad:'linear-gradient(145deg,#9B59FF 0%,#C27BFF 100%)',hex:'#9B59FF',bar:'#9B59FF'},
-  '07':{grad:'linear-gradient(145deg,#FF8C42 0%,#FF5569 100%)',hex:'#FF8C42',bar:'#FF8C42'},
-  '08':{grad:'linear-gradient(145deg,#3A4070 0%,#5A6399 100%)',hex:'#5A6399',bar:'#5A6399'},
+  '01':{grad:'linear-gradient(145deg,#4F7EFF,#9B59FF)',hex:'#4F7EFF',bar:'#4F7EFF'},
+  '02':{grad:'linear-gradient(145deg,#06D6A0,#00B4CC)',hex:'#06D6A0',bar:'#06D6A0'},
+  '03':{grad:'linear-gradient(145deg,#FFD166,#FF8C42)',hex:'#FFD166',bar:'#FFD166'},
+  '04':{grad:'linear-gradient(145deg,#FF4D8D,#FF5569)',hex:'#FF4D8D',bar:'#FF4D8D'},
+  '05':{grad:'linear-gradient(145deg,#00D4FF,#4F7EFF)',hex:'#00D4FF',bar:'#00D4FF'},
+  '06':{grad:'linear-gradient(145deg,#9B59FF,#C27BFF)',hex:'#9B59FF',bar:'#9B59FF'},
+  '07':{grad:'linear-gradient(145deg,#FF8C42,#FFD166)',hex:'#FF8C42',bar:'#FF8C42'},
+  '08':{grad:'linear-gradient(145deg,#06D6A0,#9B59FF)',hex:'#06D6A0',bar:'#06D6A0'},
+  '09':{grad:'linear-gradient(145deg,#4F7EFF,#00D4FF)',hex:'#4F7EFF',bar:'#4F7EFF'},
+  '10':{grad:'linear-gradient(145deg,#FF4D8D,#9B59FF)',hex:'#FF4D8D',bar:'#FF4D8D'},
+  '11':{grad:'linear-gradient(145deg,#06D6A0,#4F7EFF)',hex:'#06D6A0',bar:'#06D6A0'},
+  '12':{grad:'linear-gradient(145deg,#8B93C4,#4A5180)',hex:'#8B93C4',bar:'#8B93C4'},
 };
 const ITEM_PAL = [
   {grad:'linear-gradient(145deg,#4F7EFF,#7B5CFF)',shadow:'rgba(79,126,255,0.35)',hex:'#4F7EFF'},
@@ -2685,6 +2575,12 @@ const SVG_ICONS = {
   doc:`<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
   bell:`<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>`,
   book:`<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>`,
+  home:`<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+  map:`<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>`,
+  tag:`<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/></svg>`,
+  cal2:`<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  leaf:`<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.92c1.82-.7 3.95-1.87 5.18-3.42 2-2.5 2.5-6 9-8z"/></svg>`,
+  gear:`<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>`,
   box:`<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>`,
 };
 const SVG_ICONS_SM = {
@@ -2695,41 +2591,35 @@ const SVG_ICONS_SM = {
   doc:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
   bell:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>`,
   book:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>`,
+  home:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+  map:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>`,
+  tag:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/></svg>`,
+  cal2:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  leaf:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.92c1.82-.7 3.95-1.87 5.18-3.42 2-2.5 2.5-6 9-8z"/></svg>`,
+  gear:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>`,
   box:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>`,
 };
 
 const DEFAULT_SECTIONS = [
-  {id:'01',title:'ระบบจองคิว',sub:'Realtime Tracking Queue',iconKey:'cal',items:[
-    {name:'Parking',desc:'จองที่จอดรถ',href:'https://add00917-hue.github.io/carpark/',status:'live',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="7" width="20" height="13" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>`},
-    {name:'Library',desc:'จองห้องสมุด',href:'https://chaiwatsuthacheewa-creator.github.io/NTL-Library-Room/',status:'live',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>`},
-    {name:'Playground',desc:'จองจัดพื้นที่ 12A',href:'03_playground.html',status:'active',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2C8 2 4 5.5 4 9.5c0 5.5 7.5 12.5 8 12.5s8-7 8-12.5C20 5.5 16 2 12 2z"/><circle cx="12" cy="9.5" r="2.5"/></svg>`},
-    {name:'KSL Common',desc:'พื้นที่ส่วนกลาง KSL',href:'ksl_common.html',status:'wip',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>`},
+  {id:'01',title:'DASHBOARD',sub:'ระบบ Dashboard ภาพรวม',iconKey:'bar',direct:true,href:'#dashboard',items:[]},
+  {id:'02',title:'Work Load GNR3',sub:'ภาระงานและการจัดการทีม',iconKey:'doc',items:[
+    {name:'Work Load Overview',desc:'ภาพรวมภาระงาน GNR3',href:'workload.html',status:'wip',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`},
   ]},
-  {id:'02',title:'งานตรวจสอบ และการแจ้งเตือน',sub:'CM · PM Notification',iconKey:'msg',items:[
-    {name:'LINE Notify',desc:'ส่งแจ้งเตือนกลุ่มไลน์',href:'https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/',status:'live',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`},
-    {name:'ตรวจสอบพื้นที่',desc:'Area Inspection',href:'09_inspection.html',status:'active',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>`},
-    {name:'ข้อมูลขยะ',desc:'Waste Data Records',href:'waste_data.html',status:'wip',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>`},
+  {id:'03',title:'ระบบแจ้งเตือน Line Notify',sub:'CM · PM Notification System',iconKey:'msg',direct:true,href:'https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/',items:[]},
+  {id:'04',title:'ระบบบริหารลานจอดรถ',sub:'Parking Management System',iconKey:'cal',direct:true,href:'https://add00917-hue.github.io/carpark/',items:[]},
+  {id:'05',title:'ระบบจองใช้พื้นที่ส่วนกลาง',sub:'Common Area Reservation System',iconKey:'home',items:[
+    {name:'ระบบจองห้องสมุด',desc:'NTL Library Room',href:'https://chaiwatsuthacheewa-creator.github.io/NTL-Library-Room/',status:'live',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>`},
+    {name:'แผนการจองพื้นที่ 12A Playground',desc:'12A Playground Area',href:'playground_12a.html',status:'wip',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2C8 2 4 5.5 4 9.5c0 5.5 7.5 12.5 8 12.5s8-7 8-12.5C20 5.5 16 2 12 2z"/><circle cx="12" cy="9.5" r="2.5"/></svg>`},
+    {name:'แผนการจองพื้นที่ 12 Common KSL',desc:'12 Common KSL Area',href:'common_ksl.html',status:'wip',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>`},
   ]},
-  {id:'03',title:'Stock & อุปโภคบริโภค',sub:'Inventory Management',iconKey:'bar',items:[
-    {name:'Stock อุปโภคบริโภค',desc:'Stock-ปโภคบริโภค',href:'https://add00917-hue.github.io/Stock-Management-System',status:'live',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/></svg>`},
-    {name:'Stock ส่วนกลาง',desc:'Stock ส่วนกลาง GNR3',href:'06_stock.html',status:'active',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="6" height="18" rx="1"/><rect x="9" y="8" width="6" height="13" rx="1"/><rect x="16" y="5" width="6" height="16" rx="1"/></svg>`},
-    {name:'น้ำดื่ม',desc:'Water Supplies',href:'supplies_water.html',status:'wip',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>`},
-  ]},
-  {id:'04',title:'Budget',sub:'Financial Management',iconKey:'money',items:[
-    {name:'ค่าใช้จ่ายรวม',desc:'Total Expenses',href:'budget_total.html',status:'wip',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>`},
-    {name:'ค่าไฟฟ้า',desc:'Electricity Cost',href:'budget_electric.html',status:'wip',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`},
-    {name:'ค่าพนักงานแม่บ้าน',desc:'Housekeeping Staff',href:'07_housekeeping.html',status:'active',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 22l4-4"/><path d="M7 19l10-10"/></svg>`},
-    {name:'ค่าพนักงาน รปภ.',desc:'Security Staff',href:'08_security.html',status:'active',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`},
-  ]},
-  {id:'05',title:'รายงานพื้นที่สำนักงาน',sub:'Office Area Report',iconKey:'doc',items:[
-    {name:'รายละเอียดพื้นที่ ①',desc:'Area Detail Part 1',href:'office_area1.html',status:'wip',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`},
-    {name:'แบบแปลนสำนักงาน',desc:'Office Floor Plan',href:'office_plan.html',status:'wip',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>`},
-  ]},
-  {id:'06',title:'ประกาศสื่อสาร',sub:'Announcements',iconKey:'bell',direct:true,href:'announcements.html',items:[]},
-  {id:'07',title:'แผนงานฝ่ายอาคาร',sub:'Building Operations Plan',iconKey:'book',direct:true,href:'building_plan.html',items:[]},
-  {id:'08',title:'รายการทรัพย์สิน',sub:'Asset Inventory',iconKey:'box',direct:true,href:'assets.html',items:[]},
+  {id:'06',title:'แผนการทั่วไป',sub:'General Plans',iconKey:'book',direct:true,href:'general_plans.html',items:[]},
+  {id:'07',title:'แบบแปลน',sub:'Building Floor Plans',iconKey:'map',direct:true,href:'floor_plans.html',items:[]},
+  {id:'08',title:'งานโครงการ',sub:'Project Management',iconKey:'box',direct:true,href:'project_management.html',items:[]},
+  {id:'09',title:'ทรัพย์สิน',sub:'Asset Management',iconKey:'tag',direct:true,href:'assets.html',items:[]},
+  {id:'10',title:'ปฏิทินวันลา วันหยุด OT',sub:'Leave · Holiday · OT Calendar',iconKey:'cal2',direct:true,href:'calendar.html',items:[]},
+  {id:'11',title:'ESG',sub:'Environmental · Social · Governance',iconKey:'leaf',direct:true,href:'esg.html',items:[]},
+  {id:'12',title:'ระบบงานสำนักงาน อื่นๆ',sub:'Office Work System',iconKey:'gear',direct:true,href:'office_system.html',items:[]},
 ];
-
 function loadData(){try{const s=localStorage.getItem(STORAGE_KEY);return s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}catch(e){return JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}}
 function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(SECTIONS));}
 let SECTIONS=loadData(), currentSecId=null;
@@ -2776,9 +2666,20 @@ let currentTab='main';
 function switchTab(tab){
   currentTab=tab;
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.body.style.overflow='';
+  const ssb2=document.getElementById('ss-bar');
+  const navt2=document.getElementById('nav-tabs');
+  if(ssb2){ssb2.style.display='none';}
+  if(navt2){navt2.style.display='';}
   ['view-dash','view-main','view-sub','view-admin'].forEach(id=>document.getElementById(id).classList.remove('active'));
   document.querySelector('.topbar').classList.remove('hidden');
-  if(tab==='dashboard'){const vd=document.getElementById('view-dash');void vd.offsetWidth;renderDashboard();vd.classList.add('active');try{history.replaceState('',document.title,window.location.pathname);}catch(e){}}
+  if(tab==='dashboard'){
+    document.body.style.overflow='hidden';
+    const ssb=document.getElementById('ss-bar');
+    const navt=document.getElementById('nav-tabs');
+    if(ssb){ssb.style.display='flex';}
+    if(navt){navt.style.display='none';}
+    const vd=document.getElementById('view-dash');void vd.offsetWidth;renderDashboard();vd.classList.add('active');try{history.replaceState('',document.title,window.location.pathname);}catch(e){}}
   else if(tab==='admin'){renderAdminPanel();document.getElementById('view-admin').classList.add('active');try{history.replaceState('',document.title,window.location.pathname);}catch(e){}}
   else route();
 }
