@@ -47,7 +47,7 @@
 [data-theme="light"] .dot-grid { opacity:.10; background-image:radial-gradient(circle,rgba(26,35,64,.12) 1px,transparent 1px); }
 /* ══ Dashboard height chain — view-dash must fill viewport below topbar ══ */
 .view-dash.active {
-  height: calc(100vh - 56px) !important;
+  height: calc(100vh - 64px) !important;
   display:flex !important;
   flex-direction:column;
   overflow:hidden;
@@ -152,7 +152,7 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
   width:100%;
   display:flex; align-items:center; gap:6px;
   padding:0 1.2rem;
-  height:56px;
+  height:64px;
   background:rgba(14,17,32,0.98);
   backdrop-filter:blur(6px);
   -webkit-backdrop-filter:blur(6px);
@@ -164,12 +164,34 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
 .sidebar-toggle-btn { display:none; }
 .sb-ov { display:none !important; }
 /* Brand */
-.topbar-brand { display:flex; align-items:center; gap:9px; flex-shrink:0; }
-.logo { width:32px; height:32px; border-radius:9px; flex-shrink:0; background:linear-gradient(145deg,#4F7EFF,#9B59FF); display:flex; align-items:center; justify-content:center; box-shadow:0 3px 10px rgba(79,126,255,.40); position:relative; overflow:hidden; }
-.logo::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.22),transparent 55%);}
-.logo span{font-family:'Kanit';font-size:9.5px;font-weight:900;color:#fff;letter-spacing:.8px;position:relative;z-index:1;}
-.htitle h1{font-family:'Kanit';font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;}
-.htitle p{display:none;}
+.topbar-brand { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.logo {
+  width:38px; height:38px; border-radius:11px; flex-shrink:0;
+  background:linear-gradient(145deg,#4F7EFF,#9B59FF);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 14px rgba(79,126,255,.50);
+  position:relative; overflow:hidden;
+}
+.logo::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.28),transparent 55%);}
+.logo span{font-family:'Kanit';font-size:10px;font-weight:900;color:#fff;letter-spacing:.8px;position:relative;z-index:1;}
+.htitle { display:flex; flex-direction:column; gap:1px; }
+.htitle h1 {
+  font-family:'Kanit'; font-size:15px; font-weight:800;
+  white-space:nowrap; line-height:1.15;
+  background:linear-gradient(90deg,#EEF0FF 0%,#9B59FF 60%,#4F7EFF 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.htitle p {
+  display:block;
+  font-family:'Sarabun'; font-size:9.5px; font-weight:500;
+  color:var(--text3); white-space:nowrap; letter-spacing:.3px;
+}
+[data-theme="light"] .htitle h1 {
+  background:linear-gradient(90deg,#1A2340 0%,#4F7EFF 50%,#9B59FF 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
 /* Divider */
 .topbar-divider { width:1px; height:22px; background:var(--border2); flex-shrink:0; margin:0 4px; }
 /* Nav tabs horizontal */
@@ -1351,7 +1373,10 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
 <header class="topbar">
   <div class="topbar-brand">
     <div class="logo"><span>GNR3</span></div>
-    <div class="htitle"><h1>GNR3 ระบบ</h1><p>Office Management System</p></div>
+    <div class="htitle">
+      <h1>GNR3 ระบบบริหารจัดการสำนักงาน</h1>
+      <p>Office Management System · v4.0</p>
+    </div>
   </div>
   <div style="width:1px;height:22px;background:var(--border2);flex-shrink:0;margin:0 4px;"></div>
   <nav class="nav-tabs" id="nav-tabs">
