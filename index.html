@@ -703,10 +703,10 @@ body.sidebar-collapsed .wrap{ margin-left:0; width:100vw; }
 .cat-big-ico svg{width:36px;height:36px;}
 .cat-badge{position:absolute;top:.8rem;right:.8rem;z-index:3;font-size:8.5px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.9);background:rgba(0,0,0,.30);border:1px solid rgba(255,255,255,.25);padding:2px 9px;border-radius:20px;backdrop-filter:blur(4px);}
 .cat-id-tag{position:absolute;top:.8rem;left:.8rem;z-index:3;font-family:'Kanit';font-size:9px;font-weight:800;color:rgba(255,255,255,.75);letter-spacing:1.5px;background:rgba(0,0,0,.20);border:1px solid rgba(255,255,255,.20);padding:2px 8px;border-radius:20px;backdrop-filter:blur(4px);}
-.cat-card-body{padding:.95rem 1.1rem 1.1rem;flex:1;display:flex;flex-direction:column;background:var(--surface);border-top:1px solid var(--border);}
-.cat-name{font-family:'Kanit';font-size:13px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:2px;}
-.cat-desc{font-size:10px;color:var(--text2);flex:1;line-height:1.4;}
-.cat-progress-wrap{margin-top:.75rem;}
+.cat-card-body{padding:1rem 1.1rem 1.1rem;flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;background:var(--surface);border-top:1px solid var(--border);}
+.cat-name{font-family:'Kanit';font-size:15px;font-weight:800;color:var(--text);line-height:1.35;margin-bottom:3px;}
+.cat-desc{font-size:10.5px;color:var(--text2);flex:1;line-height:1.4;}
+.cat-progress-wrap{margin-top:.75rem;width:100%;}
 .cat-prog-track{height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;}
 .cat-prog-fill{height:100%;border-radius:2px;}
 .cat-prog-label{font-size:9px;color:var(--text3);margin-top:4px;font-weight:600;}
@@ -2602,9 +2602,7 @@ const SVG_ICONS_SM = {
 
 const DEFAULT_SECTIONS = [
   {id:'01',title:'DASHBOARD',sub:'ระบบ Dashboard ภาพรวม',iconKey:'bar',direct:true,href:'#dashboard',items:[]},
-  {id:'02',title:'Work Load GNR3',sub:'ภาระงานและการจัดการทีม',iconKey:'doc',items:[
-    {name:'Work Load Overview',desc:'ภาพรวมภาระงาน GNR3',href:'workload.html',status:'wip',icon:`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`},
-  ]},
+  {id:'02',title:'Work Load GNR3',sub:'ภาระงานและการจัดการทีม',iconKey:'doc',direct:true,href:'workload.html',items:[]},
   {id:'03',title:'ระบบแจ้งเตือน Line Notify',sub:'CM · PM Notification System',iconKey:'msg',direct:true,href:'https://chaiwatsuthacheewa-creator.github.io/LINE-Maintennance-UI/',items:[]},
   {id:'04',title:'ระบบบริหารลานจอดรถ',sub:'Parking Management System',iconKey:'cal',direct:true,href:'https://add00917-hue.github.io/carpark/',items:[]},
   {id:'05',title:'ระบบจองใช้พื้นที่ส่วนกลาง',sub:'Common Area Reservation System',iconKey:'home',items:[
